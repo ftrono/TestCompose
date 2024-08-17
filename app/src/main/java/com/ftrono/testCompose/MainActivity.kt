@@ -2,6 +2,7 @@ package com.ftrono.testCompose
 
 import android.hardware.camera2.params.ColorSpaceTransform
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -38,10 +39,14 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
@@ -52,10 +57,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -80,6 +89,7 @@ import com.ftrono.testCompose.ui.theme.black
 import com.ftrono.testCompose.ui.theme.colorPrimary
 import com.ftrono.testCompose.ui.theme.light_grey
 
+
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,9 +113,22 @@ class MainActivity : ComponentActivity() {
     }
 
 
+    //TOP APP BAR:
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun TopBar() {
+
+        val mContext = LocalContext.current
+
+        // STATES:
+        var mDisplayMenu by remember {
+            mutableStateOf(false)
+        }
+
+        var menuLoggedIn by remember {
+            mutableStateOf(false)
+        }
+
         CenterAlignedTopAppBar(
             modifier = Modifier.fillMaxWidth(),
             windowInsets = WindowInsets(
@@ -132,14 +155,6 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             },
-//            navigationIcon = {
-//                IconButton(onClick = { /* doSomething() */ }) {
-//                    Icon(
-//                        imageVector = Icons.Filled.Menu,
-//                        contentDescription = "Localized description"
-//                    )
-//                }
-//            },
             colors = TopAppBarColors(
                 containerColor = colorResource(id = R.color.colorPrimary),
                 scrolledContainerColor = colorResource(id = R.color.colorPrimary),
@@ -148,11 +163,106 @@ class MainActivity : ComponentActivity() {
                 actionIconContentColor = colorResource(id = R.color.mid_grey)
             ),
             scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
-            //actions =
+            actions = {
+
+                //SETTINGS BUTTON:
+                IconButton(onClick = { Toast.makeText(mContext, "Settings", Toast.LENGTH_SHORT).show() }) {
+                    Icon(
+                        painterResource(id = R.drawable.item_settings),
+                        "",
+                        tint = colorResource(id = R.color.light_grey)
+                    )
+                }
+
+                //"MORE OPTIONS" BUTTON:
+                IconButton(onClick = { mDisplayMenu = !mDisplayMenu }) {
+                    Icon(
+                        Icons.Default.MoreVert,
+                        "",
+                        tint = colorResource(id = R.color.light_grey)
+                    )
+                }
+
+                //DROPDOWN MENU:
+                DropdownMenu(
+                    modifier = Modifier
+                        .background(colorResource(id = R.color.dark_grey)),
+                    expanded = mDisplayMenu,
+                    onDismissRequest = { mDisplayMenu = false }
+                ) {
+
+                    //1) Item: LOGIN/LOGOUT
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = if (!menuLoggedIn) "Login to Spotify" else "Logout from Spotify",
+                                color = colorResource(id = R.color.light_grey),
+                                fontSize = 16.sp
+                            )},
+                        leadingIcon = {
+                            Icon(
+                                painterResource(id = R.drawable.item_user),
+                                "",
+                                tint = colorResource(id = R.color.mid_grey)
+                            )
+                        },
+                        onClick = {
+                            menuLoggedIn = !menuLoggedIn
+                            if (menuLoggedIn) {
+                                Toast.makeText(mContext, "Logged in to Spotify!", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(mContext, "Logged out of Spotify", Toast.LENGTH_SHORT).show()
+                            }
+                            mDisplayMenu = false
+                        })
+
+                    //2) Item: VOICE SETTINGS
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = "Voice settings",
+                                color = colorResource(id = R.color.light_grey),
+                                fontSize = 16.sp
+                            )},
+                        leadingIcon = {
+                            Icon(
+                                painterResource(id = R.drawable.speak_icon_gray),
+                                "",
+                                tint = colorResource(id = R.color.mid_grey)
+                            )
+                        },
+                        onClick = {
+                            Toast.makeText(mContext, "Voice settings", Toast.LENGTH_SHORT).show()
+                            mDisplayMenu = false
+                        })
+
+                    //3) Item: PERMISSIONS
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = "Permissions",
+                                color = colorResource(id = R.color.light_grey),
+                                fontSize = 16.sp
+                            )},
+                        leadingIcon = {
+                            Icon(
+                                painterResource(id = R.drawable.item_permissions),
+                                "",
+                                tint = colorResource(id = R.color.mid_grey)
+                            )
+                        },
+                        onClick = {
+                            Toast.makeText(mContext, "Permissions", Toast.LENGTH_SHORT).show()
+                            mDisplayMenu = false
+                        })
+
+                }
+            }
         )
     }
 
 
+    //BOTTOM NAVBAR:
     @Composable
     fun BottomNavigationBar(
         items: List<NavigationItem>,
