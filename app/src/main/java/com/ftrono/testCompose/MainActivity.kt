@@ -55,6 +55,7 @@ import com.ftrono.testCompose.screen.GuideScreen
 import com.ftrono.testCompose.screen.HistoryScreen
 import com.ftrono.testCompose.screen.HomeScreen
 import com.ftrono.testCompose.screen.MyDJamesScreen
+import com.ftrono.testCompose.screen.SettingsScreen
 import com.ftrono.testCompose.ui.theme.DJamesTheme
 import com.ftrono.testCompose.ui.theme.NavigationItem
 import com.ftrono.testCompose.ui.theme.black
@@ -87,7 +88,7 @@ class MainActivity : ComponentActivity() {
     //TOP APP BAR:
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun TopBar() {
+    fun TopBar(navController: NavController) {
         val mContext = LocalContext.current
 
         // STATES:
@@ -134,9 +135,22 @@ class MainActivity : ComponentActivity() {
             ),
             scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(),
             actions = {
-
                 //SETTINGS BUTTON:
-                IconButton(onClick = { Toast.makeText(mContext, "Settings", Toast.LENGTH_SHORT).show() }) {
+                IconButton(
+                    onClick = {
+                        navController.navigate(NavigationItem.Settings.route) {
+                            // Pop up to the start destination of the graph to avoid building up a large stack of destinations on the back stack as users select items:
+                            navController.graph.startDestinationRoute?.let { route ->
+                                popUpTo(route) {
+                                    saveState = true
+                                }
+                            }
+                            // Avoid multiple copies of the same destination when reselecting the same item:
+                            launchSingleTop = true
+                            // Restore state when reselecting a previously selected item:
+                            restoreState = true
+                        }
+                    }) {
                     Icon(
                         painterResource(id = R.drawable.item_settings),
                         "",
@@ -307,7 +321,7 @@ class MainActivity : ComponentActivity() {
             modifier = Modifier
                 .fillMaxWidth()
                 .safeDrawingPadding(),
-            topBar = { TopBar() },
+            topBar = { TopBar(navController) },
             bottomBar = { BottomNavigationBar(items, navController) },
             // Set background color to avoid the white flashing when you switch between screens:
             containerColor = colorResource(id = R.color.windowBackground)
@@ -338,6 +352,9 @@ class MainActivity : ComponentActivity() {
             }
             composable(NavigationItem.History.route) {
                 HistoryScreen()
+            }
+            composable(NavigationItem.Settings.route) {
+                SettingsScreen()
             }
         }
     }
