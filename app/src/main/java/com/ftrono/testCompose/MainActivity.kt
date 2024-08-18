@@ -85,6 +85,38 @@ class MainActivity : ComponentActivity() {
     }
 
 
+    @Preview
+    @Composable
+    fun MainScreen() {
+        val navController = rememberNavController()
+        val items = listOf(
+            NavigationItem.Home,
+            NavigationItem.Guide,
+            NavigationItem.MyDJames,
+            NavigationItem.History
+        )
+
+        //MAIN SCREEN (SCAFFOLD):
+        Scaffold(
+            modifier = Modifier
+                .fillMaxWidth()
+                .safeDrawingPadding(),
+            topBar = { TopBar(navController) },
+            bottomBar = { BottomNavigationBar(items, navController) },
+            // Set background color to avoid the white flashing when you switch between screens:
+            containerColor = colorResource(id = R.color.windowBackground)
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(it)
+            ) {
+                //SET CURRENT SCREEN FROM NAVIGATION HOST:
+                Navigation(navController = navController)
+            }
+        }
+    }
+
+
     //TOP APP BAR:
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -138,18 +170,7 @@ class MainActivity : ComponentActivity() {
                 //SETTINGS BUTTON:
                 IconButton(
                     onClick = {
-                        navController.navigate(NavigationItem.Settings.route) {
-                            // Pop up to the start destination of the graph to avoid building up a large stack of destinations on the back stack as users select items:
-                            navController.graph.startDestinationRoute?.let { route ->
-                                popUpTo(route) {
-                                    saveState = true
-                                }
-                            }
-                            // Avoid multiple copies of the same destination when reselecting the same item:
-                            launchSingleTop = true
-                            // Restore state when reselecting a previously selected item:
-                            restoreState = true
-                        }
+                        navigateTo(navController, NavigationItem.Settings)
                     }) {
                     Icon(
                         painterResource(id = R.drawable.item_settings),
@@ -286,52 +307,9 @@ class MainActivity : ComponentActivity() {
                     alwaysShowLabel = true,
                     selected = currentRoute == item.route,
                     onClick = {
-                        navController.navigate(item.route) {
-                            // Pop up to the start destination of the graph to avoid building up a large stack of destinations on the back stack as users select items:
-                            navController.graph.startDestinationRoute?.let { route ->
-                                popUpTo(route) {
-                                    saveState = true
-                                }
-                            }
-                            // Avoid multiple copies of the same destination when reselecting the same item:
-                            launchSingleTop = true
-                            // Restore state when reselecting a previously selected item:
-                            restoreState = true
-                        }
+                        navigateTo(navController, item)
                     }
                 )
-            }
-        }
-    }
-
-
-    @Preview
-    @Composable
-    fun MainScreen() {
-        val navController = rememberNavController()
-        val items = listOf(
-            NavigationItem.Home,
-            NavigationItem.Guide,
-            NavigationItem.MyDJames,
-            NavigationItem.History
-        )
-
-        //MAIN SCREEN (SCAFFOLD):
-        Scaffold(
-            modifier = Modifier
-                .fillMaxWidth()
-                .safeDrawingPadding(),
-            topBar = { TopBar(navController) },
-            bottomBar = { BottomNavigationBar(items, navController) },
-            // Set background color to avoid the white flashing when you switch between screens:
-            containerColor = colorResource(id = R.color.windowBackground)
-        ) {
-            Box(
-                modifier = Modifier
-                    .padding(it)
-            ) {
-                //SET CURRENT SCREEN FROM NAVIGATION HOST:
-                Navigation(navController = navController)
             }
         }
     }
@@ -358,4 +336,22 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+
+    //Helper: navigate to route:
+    fun navigateTo(navController: NavController, item: NavigationItem) {
+        navController.navigate(item.route) {
+            // Pop up to the start destination of the graph to avoid building up a large stack of destinations on the back stack as users select items:
+            navController.graph.startDestinationRoute?.let { route ->
+                popUpTo(route) {
+                    saveState = true
+                }
+            }
+            // Avoid multiple copies of the same destination when reselecting the same item:
+            launchSingleTop = true
+            // Restore state when reselecting a previously selected item:
+            restoreState = true
+        }
+    }
+
 }
