@@ -2,37 +2,39 @@ package com.ftrono.testCompose.screen
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
-import com.ftrono.testCompose.R
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
-
+import com.ftrono.testCompose.R
 
 @Composable
-fun HomeScreen() {
+fun GuideScreen() {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     if (isLandscape) {
-        HomeHorizontal()
+        GuideHorizontal()
     } else {
-        HomeVertical()
+        GuideVertical()
     }
 }
 
 
 @Preview
 @Composable
-fun HomeVertical() {
+fun GuideVertical() {
     Box(modifier = Modifier
         .fillMaxSize()
         .background(colorResource(id = R.color.windowBackground))) {
-        androidx.compose.material3.Text(
-            text = "Home Screen",
+        Text(
+            text = "Guide Screen",
             fontSize = 24.sp,
             color = colorResource(id = R.color.light_grey),
             textAlign = TextAlign.Center,
@@ -46,12 +48,12 @@ fun HomeVertical() {
 
 @Preview(heightDp = 360, widthDp = 800)
 @Composable
-fun HomeHorizontal() {
+fun GuideHorizontal() {
     Box(modifier = Modifier
         .fillMaxSize()
         .background(colorResource(id = R.color.windowBackground))) {
-        androidx.compose.material3.Text(
-            text = "Home Screen",
+        Text(
+            text = "Guide Screen",
             fontSize = 24.sp,
             color = colorResource(id = R.color.light_grey),
             textAlign = TextAlign.Center,
