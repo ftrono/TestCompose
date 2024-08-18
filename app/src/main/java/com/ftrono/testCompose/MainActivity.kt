@@ -1,5 +1,6 @@
 package com.ftrono.testCompose
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -7,9 +8,12 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -27,6 +31,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarColors
@@ -39,12 +46,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -86,6 +95,7 @@ class MainActivity : ComponentActivity() {
 
 
     @Preview
+    @Preview(heightDp = 360, widthDp = 800)
     @Composable
     fun MainScreen() {
         val navController = rememberNavController()
@@ -96,13 +106,24 @@ class MainActivity : ComponentActivity() {
             NavigationItem.History
         )
 
+        val configuration = LocalConfiguration.current
+        val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+
         //MAIN SCREEN (SCAFFOLD):
         Scaffold(
             modifier = Modifier
                 .fillMaxWidth()
                 .safeDrawingPadding(),
             topBar = { TopBar(navController) },
-            bottomBar = { BottomNavigationBar(items, navController) },
+            bottomBar = {
+                if (!isLandscape) {
+                    BottomNavigationBar(items, navController, navBackStackEntry, currentRoute)
+                } else {
+                    SideNavigationRail(items, navController, navBackStackEntry, currentRoute)
+                }
+            },
             // Set background color to avoid the white flashing when you switch between screens:
             containerColor = colorResource(id = R.color.windowBackground)
         ) {
@@ -271,45 +292,103 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun BottomNavigationBar(
         items: List<NavigationItem>,
-        navController: NavController
+        navController: NavController,
+        navBackStackEntry: NavBackStackEntry?,
+        currentRoute: String?
     ) {
         //NAV BAR:
         NavigationBar(
             containerColor = colorResource(id = R.color.black),
             contentColor = colorResource(id = R.color.mid_grey)
         ) {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute = navBackStackEntry?.destination?.route
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                //NAV ITEMS:
+                items.forEach { item ->
+                    NavigationBarItem(
+                        icon = {
+                            Icon(
+                                painterResource(id = item.icon),
+                                contentDescription = item.title
+                            )
+                        },
+                        label = {
+                            Text(
+                                text = item.title
+                            )
+                        },
+                        colors = NavigationBarItemColors(
+                            selectedIconColor = colorResource(id = R.color.colorAccent),
+                            selectedTextColor = colorResource(id = R.color.colorAccent),
+                            unselectedIconColor = colorResource(id = R.color.mid_grey),
+                            unselectedTextColor = colorResource(id = R.color.mid_grey),
+                            selectedIndicatorColor = colorResource(id = R.color.transparent_green),
+                            disabledIconColor = colorResource(id = R.color.mid_grey),
+                            disabledTextColor = colorResource(id = R.color.mid_grey)
+                        ),
+                        alwaysShowLabel = true,
+                        selected = currentRoute == item.route,
+                        onClick = {
+                            navigateTo(navController, item)
+                        }
+                    )
+                }
+            }
+        }
+    }
 
-            //RECYCLER LIST:
-            items.forEach { item ->
-                NavigationBarItem(
-                    icon = {
-                        Icon(
-                            painterResource(id = item.icon),
-                            contentDescription = item.title
-                        )
-                    },
-                    label = {
-                        Text(
-                            text = item.title
-                        )
-                    },
-                    colors = NavigationBarItemColors(
-                        selectedIconColor = colorResource(id = R.color.colorAccent),
-                        selectedTextColor = colorResource(id = R.color.colorAccent),
-                        unselectedIconColor = colorResource(id = R.color.mid_grey),
-                        unselectedTextColor = colorResource(id = R.color.mid_grey),
-                        selectedIndicatorColor = colorResource(id = R.color.transparent_green),
-                        disabledIconColor = colorResource(id = R.color.mid_grey),
-                        disabledTextColor = colorResource(id = R.color.mid_grey)
-                    ),
-                    alwaysShowLabel = true,
-                    selected = currentRoute == item.route,
-                    onClick = {
-                        navigateTo(navController, item)
-                    }
-                )
+
+
+    //BOTTOM NAVBAR:
+    @Composable
+    fun SideNavigationRail(
+        items: List<NavigationItem>,
+        navController: NavController,
+        navBackStackEntry: NavBackStackEntry?,
+        currentRoute: String?
+    ) {
+        //NAV BAR:
+        NavigationRail(
+            containerColor = colorResource(id = R.color.black),
+            contentColor = colorResource(id = R.color.mid_grey)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
+            ) {
+                //NAV ITEMS:
+                items.forEach { item ->
+                    NavigationRailItem(
+                        icon = {
+                            Icon(
+                                painterResource(id = item.icon),
+                                contentDescription = item.title
+                            )
+                        },
+                        label = {
+                            Text(
+                                text = item.title
+                            )
+                        },
+                        colors = NavigationRailItemColors(
+                            selectedIconColor = colorResource(id = R.color.colorAccent),
+                            selectedTextColor = colorResource(id = R.color.colorAccent),
+                            unselectedIconColor = colorResource(id = R.color.mid_grey),
+                            unselectedTextColor = colorResource(id = R.color.mid_grey),
+                            selectedIndicatorColor = colorResource(id = R.color.transparent_green),
+                            disabledIconColor = colorResource(id = R.color.mid_grey),
+                            disabledTextColor = colorResource(id = R.color.mid_grey)
+                        ),
+                        alwaysShowLabel = true,
+                        selected = currentRoute == item.route,
+                        onClick = {
+                            navigateTo(navController, item)
+                        }
+                    )
+                }
             }
         }
     }
