@@ -31,17 +31,25 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationRailItemColors
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScope
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -99,7 +107,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun MainScreen() {
         val navController = rememberNavController()
-        val items = listOf(
+        val navItems = listOf(
             NavigationItem.Home,
             NavigationItem.Guide,
             NavigationItem.MyDJames,
@@ -108,31 +116,82 @@ class MainActivity : ComponentActivity() {
 
         val configuration = LocalConfiguration.current
         val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
+        val customNavSuiteType = if (isLandscape) NavigationSuiteType.NavigationRail else NavigationSuiteType.NavigationBar
+
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
+        //var selectedItem by rememberSaveable { mutableIntStateOf(0) }
 
-        //MAIN SCREEN (SCAFFOLD):
-        Scaffold(
+        val myNavigationSuiteItemColors = NavigationSuiteDefaults.itemColors(
+            navigationBarItemColors = NavigationBarItemDefaults.colors(
+                indicatorColor = colorResource(id = R.color.transparent_green),
+                selectedIconColor = colorResource(id = R.color.colorAccent),
+                selectedTextColor = colorResource(id = R.color.colorAccent),
+                unselectedIconColor = colorResource(id = R.color.mid_grey),
+                unselectedTextColor = colorResource(id = R.color.mid_grey)
+            ),
+            navigationRailItemColors = NavigationRailItemDefaults.colors(
+                indicatorColor = colorResource(id = R.color.transparent_green),
+                selectedIconColor = colorResource(id = R.color.colorAccent),
+                selectedTextColor = colorResource(id = R.color.colorAccent),
+                unselectedIconColor = colorResource(id = R.color.mid_grey),
+                unselectedTextColor = colorResource(id = R.color.mid_grey)
+            )
+        )
+
+
+        //MAIN SCREEN: NAVIGATION:
+        NavigationSuiteScaffold(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .safeDrawingPadding(),
-            topBar = { TopBar(navController) },
-            bottomBar = {
-                if (!isLandscape) {
-                    BottomNavigationBar(items, navController, navBackStackEntry, currentRoute)
-                } else {
-                    SideNavigationRail(items, navController, navBackStackEntry, currentRoute)
+            layoutType = customNavSuiteType,
+            navigationSuiteItems = {
+                navItems.forEach { navItem ->
+                    item(
+                        modifier = if (isLandscape) Modifier.offset(y=60.dp) else Modifier,
+                        icon = {
+                            Icon(
+                                painterResource(id = navItem.icon),
+                                contentDescription = navItem.title
+                            )
+                        },
+                        label = {
+                            Text(
+                                text = navItem.title
+                            )
+                        },
+                        colors = myNavigationSuiteItemColors,
+                        alwaysShowLabel = true,
+                        selected = currentRoute == navItem.route,
+                        onClick = {
+                            navigateTo(navController, navItem)
+                        }
+                    )
                 }
             },
-            // Set background color to avoid the white flashing when you switch between screens:
-            containerColor = colorResource(id = R.color.windowBackground)
+            containerColor = colorResource(id = R.color.black),
+            contentColor = colorResource(id = R.color.mid_grey),
+            navigationSuiteColors = NavigationSuiteDefaults.colors(
+                navigationBarContainerColor = colorResource(id = R.color.black),
+                navigationBarContentColor = colorResource(id = R.color.mid_grey),
+                navigationRailContainerColor = colorResource(id = R.color.black),
+                navigationRailContentColor = colorResource(id = R.color.mid_grey),
+            )
         ) {
-            Box(
-                modifier = Modifier
-                    .padding(it)
+            //MAIN SCREEN: SCAFFOLD:
+            Scaffold(
+                topBar = { TopBar(navController) },
+                // Set background color to avoid the white flashing when you switch between screens:
+                containerColor = colorResource(id = R.color.windowBackground)
             ) {
-                //SET CURRENT SCREEN FROM NAVIGATION HOST:
-                Navigation(navController = navController)
+                Box(
+                    modifier = Modifier
+                        .padding(it)
+                ) {
+                    //SET CURRENT SCREEN FROM NAVIGATION HOST:
+                    Navigation(navController = navController)
+                }
             }
         }
     }
@@ -285,112 +344,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         )
-    }
-
-
-    //BOTTOM NAVBAR:
-    @Composable
-    fun BottomNavigationBar(
-        items: List<NavigationItem>,
-        navController: NavController,
-        navBackStackEntry: NavBackStackEntry?,
-        currentRoute: String?
-    ) {
-        //NAV BAR:
-        NavigationBar(
-            containerColor = colorResource(id = R.color.black),
-            contentColor = colorResource(id = R.color.mid_grey)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                //NAV ITEMS:
-                items.forEach { item ->
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                painterResource(id = item.icon),
-                                contentDescription = item.title
-                            )
-                        },
-                        label = {
-                            Text(
-                                text = item.title
-                            )
-                        },
-                        colors = NavigationBarItemColors(
-                            selectedIconColor = colorResource(id = R.color.colorAccent),
-                            selectedTextColor = colorResource(id = R.color.colorAccent),
-                            unselectedIconColor = colorResource(id = R.color.mid_grey),
-                            unselectedTextColor = colorResource(id = R.color.mid_grey),
-                            selectedIndicatorColor = colorResource(id = R.color.transparent_green),
-                            disabledIconColor = colorResource(id = R.color.mid_grey),
-                            disabledTextColor = colorResource(id = R.color.mid_grey)
-                        ),
-                        alwaysShowLabel = true,
-                        selected = currentRoute == item.route,
-                        onClick = {
-                            navigateTo(navController, item)
-                        }
-                    )
-                }
-            }
-        }
-    }
-
-
-
-    //BOTTOM NAVBAR:
-    @Composable
-    fun SideNavigationRail(
-        items: List<NavigationItem>,
-        navController: NavController,
-        navBackStackEntry: NavBackStackEntry?,
-        currentRoute: String?
-    ) {
-        //NAV BAR:
-        NavigationRail(
-            containerColor = colorResource(id = R.color.black),
-            contentColor = colorResource(id = R.color.mid_grey)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
-            ) {
-                //NAV ITEMS:
-                items.forEach { item ->
-                    NavigationRailItem(
-                        icon = {
-                            Icon(
-                                painterResource(id = item.icon),
-                                contentDescription = item.title
-                            )
-                        },
-                        label = {
-                            Text(
-                                text = item.title
-                            )
-                        },
-                        colors = NavigationRailItemColors(
-                            selectedIconColor = colorResource(id = R.color.colorAccent),
-                            selectedTextColor = colorResource(id = R.color.colorAccent),
-                            unselectedIconColor = colorResource(id = R.color.mid_grey),
-                            unselectedTextColor = colorResource(id = R.color.mid_grey),
-                            selectedIndicatorColor = colorResource(id = R.color.transparent_green),
-                            disabledIconColor = colorResource(id = R.color.mid_grey),
-                            disabledTextColor = colorResource(id = R.color.mid_grey)
-                        ),
-                        alwaysShowLabel = true,
-                        selected = currentRoute == item.route,
-                        onClick = {
-                            navigateTo(navController, item)
-                        }
-                    )
-                }
-            }
-        }
     }
 
 

@@ -51,6 +51,7 @@ android {
 
 dependencies {
 
+    implementation(libs.androidx.material3.adaptive.navigation.suite.android)
     //val nav_version = "2.7.7"
     val compose_version = rootProject.extra.get("compose_version") as String
 
@@ -77,4 +78,6 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling:$compose_version")
 
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.material3.adaptive.navigation.suite)
+
 }
