@@ -5,6 +5,8 @@ import android.app.Application
 
 //GLOBALS:
 var spotifyLoggedIn: Boolean = false
+var overlayActive: Boolean = false
+var volumeUpEnabled: Boolean = true
 
 
 class App: Application()
