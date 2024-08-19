@@ -8,12 +8,9 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -28,13 +25,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.NavigationRail
-import androidx.compose.material3.NavigationRailItem
-import androidx.compose.material3.NavigationRailItemColors
 import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,17 +33,16 @@ import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScope
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -61,13 +51,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavBackStackEntry
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.ftrono.testCompose.application.spotifyLoggedIn
 import com.ftrono.testCompose.screen.GuideScreen
 import com.ftrono.testCompose.screen.HistoryScreen
 import com.ftrono.testCompose.screen.HomeScreen
@@ -75,25 +66,26 @@ import com.ftrono.testCompose.screen.MyDJamesScreen
 import com.ftrono.testCompose.screen.SettingsScreen
 import com.ftrono.testCompose.ui.theme.DJamesTheme
 import com.ftrono.testCompose.ui.theme.NavigationItem
-import com.ftrono.testCompose.ui.theme.black
-import com.ftrono.testCompose.ui.theme.colorPrimary
+import com.ftrono.testCompose.ui.theme.windowBackground
 
 
 class MainActivity : ComponentActivity() {
+
+    private var spotifyLoggedInLiveData = MutableLiveData<Boolean>(spotifyLoggedIn)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
             //For safe padding:
-            statusBarStyle = SystemBarStyle.auto(colorPrimary.toArgb(), colorPrimary.toArgb()),
-            navigationBarStyle = SystemBarStyle.auto(black.toArgb(), black.toArgb())
+            statusBarStyle = SystemBarStyle.auto(windowBackground.toArgb(), windowBackground.toArgb()),
+            navigationBarStyle = SystemBarStyle.auto(windowBackground.toArgb(), windowBackground.toArgb())
         )
         setContent {
             DJamesTheme {
                 //Background:
                 Surface (
                     modifier = Modifier.fillMaxSize(),
-                    color = black
+                    color = windowBackground
                 ) {
                     MainScreen()
                 }
@@ -114,6 +106,7 @@ class MainActivity : ComponentActivity() {
             NavigationItem.History
         )
 
+        val loggedInState by spotifyLoggedInLiveData.observeAsState()
         val configuration = LocalConfiguration.current
         val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
         val customNavSuiteType = if (isLandscape) NavigationSuiteType.NavigationRail else NavigationSuiteType.NavigationBar
@@ -144,12 +137,22 @@ class MainActivity : ComponentActivity() {
         NavigationSuiteScaffold(
             modifier = Modifier
                 .fillMaxSize()
-                .safeDrawingPadding(),
+                .safeDrawingPadding()
+                .shadow(
+                    elevation = 4.dp,
+                    spotColor = colorResource(id = R.color.mid_grey)
+                ),
             layoutType = customNavSuiteType,
             navigationSuiteItems = {
                 navItems.forEach { navItem ->
                     item(
-                        modifier = if (isLandscape) Modifier.offset(y=60.dp) else Modifier,
+                        modifier = if (isLandscape) {
+                            Modifier
+                                .offset(y = 12.dp)
+                                .padding(4.dp)
+                        } else {
+                            Modifier
+                        },
                         icon = {
                             Icon(
                                 painterResource(id = navItem.icon),
@@ -173,15 +176,15 @@ class MainActivity : ComponentActivity() {
             containerColor = colorResource(id = R.color.black),
             contentColor = colorResource(id = R.color.mid_grey),
             navigationSuiteColors = NavigationSuiteDefaults.colors(
-                navigationBarContainerColor = colorResource(id = R.color.black),
+                navigationBarContainerColor = colorResource(id = R.color.windowBackground),
                 navigationBarContentColor = colorResource(id = R.color.mid_grey),
-                navigationRailContainerColor = colorResource(id = R.color.black),
+                navigationRailContainerColor = colorResource(id = R.color.windowBackground),
                 navigationRailContentColor = colorResource(id = R.color.mid_grey),
             )
         ) {
             //MAIN SCREEN: SCAFFOLD:
             Scaffold(
-                topBar = { TopBar(navController) },
+                topBar = { TopBar(navController, loggedInState!!) },
                 // Set background color to avoid the white flashing when you switch between screens:
                 containerColor = colorResource(id = R.color.windowBackground)
             ) {
@@ -190,7 +193,7 @@ class MainActivity : ComponentActivity() {
                         .padding(it)
                 ) {
                     //SET CURRENT SCREEN FROM NAVIGATION HOST:
-                    Navigation(navController = navController)
+                    Navigation(navController = navController, loggedInState = loggedInState!!)
                 }
             }
         }
@@ -200,7 +203,7 @@ class MainActivity : ComponentActivity() {
     //TOP APP BAR:
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun TopBar(navController: NavController) {
+    fun TopBar(navController: NavController, loggedInState: Boolean) {
         val mContext = LocalContext.current
 
         // STATES:
@@ -208,12 +211,13 @@ class MainActivity : ComponentActivity() {
             mutableStateOf(false)
         }
 
-        var menuLoggedIn by remember {
-            mutableStateOf(false)
-        }
-
         CenterAlignedTopAppBar(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 4.dp,
+                    spotColor = colorResource(id = R.color.mid_grey)
+                ),
             windowInsets = WindowInsets(
                 top = 0.dp,
                 bottom = 0.dp
@@ -239,8 +243,8 @@ class MainActivity : ComponentActivity() {
                 }
             },
             colors = TopAppBarColors(
-                containerColor = colorResource(id = R.color.colorPrimary),
-                scrolledContainerColor = colorResource(id = R.color.colorPrimary),
+                containerColor = colorResource(id = R.color.windowBackground),
+                scrolledContainerColor = colorResource(id = R.color.windowBackground),
                 navigationIconContentColor = colorResource(id = R.color.mid_grey),
                 titleContentColor = colorResource(id = R.color.light_grey),
                 actionIconContentColor = colorResource(id = R.color.mid_grey)
@@ -280,7 +284,7 @@ class MainActivity : ComponentActivity() {
                     DropdownMenuItem(
                         text = {
                             Text(
-                                text = if (!menuLoggedIn) "Login to Spotify" else "Logout from Spotify",
+                                text = if (!loggedInState) "Login to Spotify" else "Logout from Spotify",
                                 color = colorResource(id = R.color.light_grey),
                                 fontSize = 16.sp
                             )},
@@ -292,8 +296,9 @@ class MainActivity : ComponentActivity() {
                             )
                         },
                         onClick = {
-                            menuLoggedIn = !menuLoggedIn
-                            if (menuLoggedIn) {
+                            spotifyLoggedIn = !spotifyLoggedIn
+                            spotifyLoggedInLiveData.postValue(spotifyLoggedIn)
+                            if (spotifyLoggedIn) {
                                 Toast.makeText(mContext, "Logged in to Spotify!", Toast.LENGTH_SHORT).show()
                             } else {
                                 Toast.makeText(mContext, "Logged out of Spotify", Toast.LENGTH_SHORT).show()
@@ -349,10 +354,10 @@ class MainActivity : ComponentActivity() {
 
     //NAV HOST:
     @Composable
-    fun Navigation(navController: NavHostController) {
+    fun Navigation(navController: NavHostController, loggedInState: Boolean) {
         NavHost(navController, startDestination = NavigationItem.Home.route) {
             composable(NavigationItem.Home.route) {
-                HomeScreen()
+                HomeScreen(loggedInState)
             }
             composable(NavigationItem.Guide.route) {
                 GuideScreen()

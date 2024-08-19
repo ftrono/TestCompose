@@ -32,11 +32,12 @@ fun DJamesTheme(
 ) {
     val view = LocalView.current
     if (!view.isInEditMode) {
+
         SideEffect {
             val window = (view.context as Activity).window
             //SYSTEM BARS COLORS:
-            window.statusBarColor = colorPrimary.toArgb()
-            window.navigationBarColor = black.toArgb()
+            window.statusBarColor = windowBackground.toArgb()
+            window.navigationBarColor = windowBackground.toArgb()
         }
 
         MaterialTheme(

@@ -79,5 +79,6 @@ dependencies {
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material3.adaptive.navigation.suite)
+    implementation(libs.androidx.runtime.livedata)
 
 }
