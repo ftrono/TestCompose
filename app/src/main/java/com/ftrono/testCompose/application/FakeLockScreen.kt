@@ -264,7 +264,7 @@ class FakeLockScreen: ComponentActivity() {
                 //Start Main:
                 val intent1 = Intent(this, MainActivity::class.java)
                 startActivity(intent1)
-                //finish()
+                finish()
             }
         ) {
             Icon(

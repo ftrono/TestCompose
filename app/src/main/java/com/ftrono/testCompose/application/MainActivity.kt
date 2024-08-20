@@ -51,7 +51,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -70,8 +69,6 @@ import com.ftrono.testCompose.ui.theme.windowBackground
 
 
 class MainActivity : ComponentActivity() {
-
-    private var spotifyLoggedInLiveData = MutableLiveData<Boolean>(spotifyLoggedIn)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,7 +103,7 @@ class MainActivity : ComponentActivity() {
             NavigationItem.History
         )
 
-        val loggedInState by spotifyLoggedInLiveData.observeAsState()
+        val spotifyLoggedInState by spotifyLoggedIn.observeAsState()
         val configuration = LocalConfiguration.current
         val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
         val customNavSuiteType = if (isLandscape) NavigationSuiteType.NavigationRail else NavigationSuiteType.NavigationBar
@@ -184,7 +181,7 @@ class MainActivity : ComponentActivity() {
         ) {
             //MAIN SCREEN: SCAFFOLD:
             Scaffold(
-                topBar = { TopBar(navController, loggedInState!!) },
+                topBar = { TopBar(navController, spotifyLoggedInState!!) },
                 // Set background color to avoid the white flashing when you switch between screens:
                 containerColor = colorResource(id = R.color.windowBackground)
             ) {
@@ -193,7 +190,7 @@ class MainActivity : ComponentActivity() {
                         .padding(it)
                 ) {
                     //SET CURRENT SCREEN FROM NAVIGATION HOST:
-                    Navigation(navController = navController, loggedInState = loggedInState!!)
+                    Navigation(navController = navController, spotifyLoggedInState = spotifyLoggedInState!!)
                 }
             }
         }
@@ -203,7 +200,7 @@ class MainActivity : ComponentActivity() {
     //TOP APP BAR:
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun TopBar(navController: NavController, loggedInState: Boolean) {
+    fun TopBar(navController: NavController, spotifyLoggedInState: Boolean) {
         val mContext = LocalContext.current
 
         // STATES:
@@ -284,7 +281,7 @@ class MainActivity : ComponentActivity() {
                     DropdownMenuItem(
                         text = {
                             Text(
-                                text = if (!loggedInState) "Login to Spotify" else "Logout from Spotify",
+                                text = if (!spotifyLoggedInState) "Login to Spotify" else "Logout from Spotify",
                                 color = colorResource(id = R.color.light_grey),
                                 fontSize = 16.sp
                             )},
@@ -296,11 +293,11 @@ class MainActivity : ComponentActivity() {
                             )
                         },
                         onClick = {
-                            spotifyLoggedIn = !spotifyLoggedIn
-                            spotifyLoggedInLiveData.postValue(spotifyLoggedIn)
-                            if (spotifyLoggedIn) {
+                            if (spotifyLoggedIn.value == false) {
+                                spotifyLoggedIn.postValue(true)
                                 Toast.makeText(mContext, "Logged in to Spotify!", Toast.LENGTH_SHORT).show()
                             } else {
+                                spotifyLoggedIn.postValue(false)
                                 Toast.makeText(mContext, "Logged out of Spotify", Toast.LENGTH_SHORT).show()
                             }
                             mDisplayMenu = false
@@ -354,10 +351,10 @@ class MainActivity : ComponentActivity() {
 
     //NAV HOST:
     @Composable
-    fun Navigation(navController: NavHostController, loggedInState: Boolean) {
+    fun Navigation(navController: NavHostController, spotifyLoggedInState: Boolean) {
         NavHost(navController, startDestination = NavigationItem.Home.route) {
             composable(NavigationItem.Home.route) {
-                HomeScreen(loggedInState, this@MainActivity)
+                HomeScreen(this@MainActivity)
             }
             composable(NavigationItem.Guide.route) {
                 GuideScreen()

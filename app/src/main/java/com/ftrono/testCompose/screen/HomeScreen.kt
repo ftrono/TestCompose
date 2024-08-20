@@ -9,7 +9,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +34,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.MutableLiveData
 import com.ftrono.testCompose.application.FakeLockScreen
 import com.ftrono.testCompose.application.MainActivity
 import com.ftrono.testCompose.application.overlayActive
@@ -43,16 +41,14 @@ import com.ftrono.testCompose.application.spotifyLoggedIn
 import com.ftrono.testCompose.application.volumeUpEnabled
 
 
-private var overlayActiveLiveData = MutableLiveData<Boolean>(overlayActive)
-private var volumeUpEnabledLiveData = MutableLiveData<Boolean>(volumeUpEnabled)
-
 @Composable
-fun HomeScreen(loggedInState: Boolean, activity: ComponentActivity) {
+fun HomeScreen(activity: ComponentActivity) {
     val configuration = LocalConfiguration.current
     val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
 
-    val overlayActiveState by overlayActiveLiveData.observeAsState()
-    val volumeUpEnabledState by overlayActiveLiveData.observeAsState()
+    val spotifyLoggedInState by spotifyLoggedIn.observeAsState()
+    val overlayActiveState by overlayActive.observeAsState()
+    val volumeUpEnabledState by volumeUpEnabled.observeAsState()
 
     //WRAPPER:
     Column(
@@ -62,7 +58,7 @@ fun HomeScreen(loggedInState: Boolean, activity: ComponentActivity) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        SpotifyLoginStatus(loggedInState)
+        SpotifyLoginStatus(spotifyLoggedInState!!)
         if (isLandscape) {
             //DISPLAY HORIZONTALLY:
             Row (
@@ -200,15 +196,15 @@ fun StartButton(overlayActiveState: Boolean, activity: ComponentActivity) {
             )
         },
         onClick = {
-            overlayActive = !overlayActive
-            overlayActiveLiveData.postValue(overlayActive)
-            if (overlayActive) {
+            if (overlayActive.value == false) {
+                overlayActive.postValue(true)
                 //Start Main:
                 val intent1 = Intent(activity, FakeLockScreen::class.java)
                 activity.startActivity(intent1)
                 Toast.makeText(mContext, "Overlay active!", Toast.LENGTH_SHORT).show()
                 //activity.finish()
             } else {
+                overlayActive.postValue(false)
                 //TODO
                 Toast.makeText(mContext, "Overlay stopped!", Toast.LENGTH_SHORT).show()
             }
@@ -218,7 +214,7 @@ fun StartButton(overlayActiveState: Boolean, activity: ComponentActivity) {
 
 
 @Composable
-fun SpotifyLoginStatus(loggedInState: Boolean) {
+fun SpotifyLoginStatus(spotifyLoggedInState: Boolean) {
     //SPOTIFY LOGIN STATUS:
     Row (
         modifier = Modifier
@@ -234,7 +230,7 @@ fun SpotifyLoginStatus(loggedInState: Boolean) {
                 .height(30.dp),
             painter = painterResource(id = R.drawable.logo_spotify),
             contentDescription = "Spotify logo",
-            colorFilter = if (!loggedInState) {
+            colorFilter = if (!spotifyLoggedInState) {
                 ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
             } else {
                 ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(1f) })
@@ -242,7 +238,7 @@ fun SpotifyLoginStatus(loggedInState: Boolean) {
         )
         //Logged in text:
         Text(
-            text = if (loggedInState) "LOGGED IN" else "NOT LOGGED IN",
+            text = if (spotifyLoggedInState) "LOGGED IN" else "NOT LOGGED IN",
             fontSize = 12.sp,
             color = colorResource(id = R.color.light_grey),
             modifier = Modifier
@@ -259,6 +255,6 @@ fun SpotifyLoginStatus(loggedInState: Boolean) {
 @Preview(heightDp = 360, widthDp = 800)
 @Composable
 fun HomePreview() {
-    HomeScreen(loggedInState = true, activity = MainActivity())
+    HomeScreen(activity = MainActivity())
 }
 

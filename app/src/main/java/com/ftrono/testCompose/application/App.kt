@@ -2,13 +2,15 @@ package com.ftrono.testCompose.application
 
 
 import android.app.Application
+import androidx.lifecycle.MutableLiveData
 
 //GLOBALS:
 
 //STATUS VARS:
-var spotifyLoggedIn: Boolean = false
-var overlayActive: Boolean = false
-var volumeUpEnabled: Boolean = true
+var spotifyLoggedIn = MutableLiveData<Boolean>(false)
+var overlayActive = MutableLiveData<Boolean>(false)
+var volumeUpEnabled = MutableLiveData<Boolean>(true)
+
 
 //Clock Act receiver:
 const val ACTION_TIME_TICK = "android.intent.action.TIME_TICK"
