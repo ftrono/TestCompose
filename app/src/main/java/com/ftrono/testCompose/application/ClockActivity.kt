@@ -14,7 +14,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +36,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
@@ -45,14 +43,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.colorResource
@@ -63,6 +58,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.MutableLiveData
 import com.ftrono.testCompose.R
 import com.ftrono.testCompose.ui.theme.ClockTheme
 import com.ftrono.testCompose.ui.theme.black
@@ -70,16 +66,22 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
-class FakeLockScreen: ComponentActivity() {
+class ClockActivity: ComponentActivity() {
 
-    private val TAG: String = FakeLockScreen::class.java.getSimpleName()
+    private val TAG: String = ClockActivity::class.java.getSimpleName()
 
     //Parameters:
-    private var now: LocalDateTime? = null
     private val dateFormat = DateTimeFormatter.ofPattern("E, dd MMM")
     private val hourFormat = DateTimeFormatter.ofPattern("HH")
     private val minsFormat = DateTimeFormatter.ofPattern("mm")
-    private var clockSeparator: String = "\n"
+
+    //Status:
+    private var currentDate = MutableLiveData<String>("Mon 1 Jan")
+    private var currentHour = MutableLiveData<String>("00")
+    private var currentMins = MutableLiveData<String>("00")
+    private var currentSongPlaying = MutableLiveData<String>("Song Name")
+    private var currentArtistPlaying = MutableLiveData<String>("Artist Name")
+    private var currentAlbumPlaying = MutableLiveData<String>("Album Name")
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -119,9 +121,15 @@ class FakeLockScreen: ComponentActivity() {
     @Preview(heightDp = 360, widthDp = 800)
     @Composable
     fun ClockScreen() {
+        //States:
         val configuration = LocalConfiguration.current
         val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
-        //val separator = if (isLandscape) ":" else "\n"
+        val currentDateState by currentDate.observeAsState()
+        val currentHourState by currentHour.observeAsState()
+        val currentMinsState by currentMins.observeAsState()
+        val currentSongPlayingState by currentSongPlaying.observeAsState()
+        val currentArtistPlayingState by currentArtistPlaying.observeAsState()
+        val currentAlbumPlayingState by currentAlbumPlaying.observeAsState()
 
         Column(
             modifier = Modifier
@@ -136,7 +144,7 @@ class FakeLockScreen: ComponentActivity() {
                 modifier = Modifier
                     .padding(bottom = if (!isLandscape) 20.dp else 10.dp)
                     .fillMaxWidth(),
-                text = "Mon 1 Jan",
+                text = currentDateState!!,
                 color = colorResource(id = R.color.faded_grey),
                 textAlign = TextAlign.Center,
                 fontSize = 22.sp
@@ -155,7 +163,11 @@ class FakeLockScreen: ComponentActivity() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .zIndex(0f),
-                    text = if (!isLandscape) "00\n00" else "00:00",
+                    text = if (!isLandscape) {
+                        "${currentHourState!!}\n${currentMinsState!!}"
+                    } else {
+                        "${currentHourState!!}:${currentMinsState!!}"
+                    },
                     color = colorResource(id = R.color.faded_grey),
                     textAlign = TextAlign.Center,
                     fontSize = if (!isLandscape) 150.sp else 140.sp,
@@ -209,7 +221,7 @@ class FakeLockScreen: ComponentActivity() {
                             modifier = Modifier
                                 .padding(start = 14.dp)
                                 .wrapContentWidth(),
-                            text = "Song Name",
+                            text = currentSongPlayingState!!,
                             color = colorResource(id = R.color.mid_grey),
                             textAlign = TextAlign.Center,
                             fontSize = 18.sp,
@@ -220,18 +232,18 @@ class FakeLockScreen: ComponentActivity() {
                             modifier = Modifier
                                 .padding(start = 14.dp)
                                 .wrapContentWidth(),
-                            text = "Artist Name",
+                            text = currentArtistPlayingState!!,
                             color = colorResource(id = R.color.mid_grey),
                             textAlign = TextAlign.Center,
                             fontSize = 14.sp
                         )
-                        //CONTEXT NAME:
+                        //ALBUM NAME:
                         Text(
                             modifier = Modifier
                                 .padding(start = 14.dp)
-                                .offset(y=-(2.dp))
+                                .offset(y = -(2.dp))
                                 .wrapContentWidth(),
-                            text = "Context Name",
+                            text = currentAlbumPlayingState!!,
                             color = colorResource(id = R.color.mid_grey),
                             textAlign = TextAlign.Center,
                             fontSize = 12.sp,
@@ -288,9 +300,10 @@ class FakeLockScreen: ComponentActivity() {
     }
 
     fun updateDateClock() {
-        now = LocalDateTime.now()
-//        dateView!!.text = now!!.format(dateFormat)
-//        clockView!!.text = now!!.format(hourFormat) + clockSeparator + now!!.format(minsFormat)
+        var now = LocalDateTime.now()
+        currentDate.postValue(now.format(dateFormat))
+        currentHour.postValue(now.format(hourFormat))
+        currentMins.postValue(now.format(minsFormat))
     }
 
 
@@ -301,6 +314,7 @@ class FakeLockScreen: ComponentActivity() {
             //Update clock (every minute):
             if (intent!!.action == ACTION_TIME_TICK) {
                 updateDateClock()
+                //Log.d(TAG, "ACTION_TIME_TICK: new time detected.")
             }
 
         }

@@ -34,7 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.ftrono.testCompose.application.FakeLockScreen
+import com.ftrono.testCompose.application.ClockActivity
 import com.ftrono.testCompose.application.MainActivity
 import com.ftrono.testCompose.application.overlayActive
 import com.ftrono.testCompose.application.spotifyLoggedIn
@@ -199,7 +199,7 @@ fun StartButton(overlayActiveState: Boolean, activity: ComponentActivity) {
             if (overlayActive.value == false) {
                 overlayActive.postValue(true)
                 //Start Main:
-                val intent1 = Intent(activity, FakeLockScreen::class.java)
+                val intent1 = Intent(activity, ClockActivity::class.java)
                 activity.startActivity(intent1)
                 Toast.makeText(mContext, "Overlay active!", Toast.LENGTH_SHORT).show()
                 //activity.finish()
