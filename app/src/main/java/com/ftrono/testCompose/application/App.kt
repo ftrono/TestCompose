@@ -1,10 +1,12 @@
 package com.ftrono.testCompose.application
 
-
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
 
+
 //GLOBALS:
+val playThreshold = 80
+val midThreshold = 55
 
 //STATUS VARS:
 var spotifyLoggedIn = MutableLiveData<Boolean>(false)

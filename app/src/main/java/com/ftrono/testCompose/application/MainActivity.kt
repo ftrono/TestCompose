@@ -66,6 +66,8 @@ import com.ftrono.testCompose.screen.SettingsScreen
 import com.ftrono.testCompose.ui.theme.DJamesTheme
 import com.ftrono.testCompose.ui.theme.NavigationItem
 import com.ftrono.testCompose.ui.theme.windowBackground
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 
 class MainActivity : ComponentActivity() {
