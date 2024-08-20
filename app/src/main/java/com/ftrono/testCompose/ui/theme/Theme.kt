@@ -47,3 +47,28 @@ fun DJamesTheme(
         )
     }
 }
+
+@Composable
+fun ClockTheme(
+    darkTheme: Boolean = true,
+    dynamicColor: Boolean = false,
+    content: @Composable () -> Unit
+) {
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+
+        SideEffect {
+            val window = (view.context as Activity).window
+            //SYSTEM BARS COLORS:
+            window.statusBarColor = black.toArgb()
+            window.navigationBarColor = black.toArgb()
+        }
+
+        MaterialTheme(
+            colorScheme = DarkColorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
+}
+

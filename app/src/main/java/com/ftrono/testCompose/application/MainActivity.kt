@@ -1,4 +1,4 @@
-package com.ftrono.testCompose
+package com.ftrono.testCompose.application
 
 import android.content.res.Configuration
 import android.os.Bundle
@@ -58,8 +58,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.ftrono.testCompose.application.overlayActive
-import com.ftrono.testCompose.application.spotifyLoggedIn
+import com.ftrono.testCompose.R
 import com.ftrono.testCompose.screen.GuideScreen
 import com.ftrono.testCompose.screen.HistoryScreen
 import com.ftrono.testCompose.screen.HomeScreen
@@ -358,7 +357,7 @@ class MainActivity : ComponentActivity() {
     fun Navigation(navController: NavHostController, loggedInState: Boolean) {
         NavHost(navController, startDestination = NavigationItem.Home.route) {
             composable(NavigationItem.Home.route) {
-                HomeScreen(loggedInState)
+                HomeScreen(loggedInState, this@MainActivity)
             }
             composable(NavigationItem.Guide.route) {
                 GuideScreen()

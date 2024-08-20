@@ -1,7 +1,9 @@
 package com.ftrono.testCompose.screen
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -34,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.MutableLiveData
+import com.ftrono.testCompose.application.FakeLockScreen
+import com.ftrono.testCompose.application.MainActivity
 import com.ftrono.testCompose.application.overlayActive
 import com.ftrono.testCompose.application.spotifyLoggedIn
 import com.ftrono.testCompose.application.volumeUpEnabled
@@ -43,7 +47,7 @@ private var overlayActiveLiveData = MutableLiveData<Boolean>(overlayActive)
 private var volumeUpEnabledLiveData = MutableLiveData<Boolean>(volumeUpEnabled)
 
 @Composable
-fun HomeScreen(loggedInState: Boolean) {
+fun HomeScreen(loggedInState: Boolean, activity: ComponentActivity) {
     val configuration = LocalConfiguration.current
     val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
 
@@ -77,7 +81,7 @@ fun HomeScreen(loggedInState: Boolean) {
             BaloonArrowHome(false)
             LogoHome()
         }
-        StartButton(overlayActiveState!!)
+        StartButton(overlayActiveState!!, activity)
     }
 }
 
@@ -170,7 +174,7 @@ fun BaloonArrowHome(isLandscape: Boolean) {
 
 
 @Composable
-fun StartButton(overlayActiveState: Boolean) {
+fun StartButton(overlayActiveState: Boolean, activity: ComponentActivity) {
     val mContext = LocalContext.current
     Button(
         modifier = Modifier
@@ -199,8 +203,11 @@ fun StartButton(overlayActiveState: Boolean) {
             overlayActive = !overlayActive
             overlayActiveLiveData.postValue(overlayActive)
             if (overlayActive) {
-                //TODO
+                //Start Main:
+                val intent1 = Intent(activity, FakeLockScreen::class.java)
+                activity.startActivity(intent1)
                 Toast.makeText(mContext, "Overlay active!", Toast.LENGTH_SHORT).show()
+                //activity.finish()
             } else {
                 //TODO
                 Toast.makeText(mContext, "Overlay stopped!", Toast.LENGTH_SHORT).show()
@@ -252,6 +259,6 @@ fun SpotifyLoginStatus(loggedInState: Boolean) {
 @Preview(heightDp = 360, widthDp = 800)
 @Composable
 fun HomePreview() {
-    HomeScreen(loggedInState = true)
+    HomeScreen(loggedInState = true, activity = MainActivity())
 }
 

@@ -15,9 +15,10 @@
         tools:targetApi="34">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".application.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:launchMode="singleInstance"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.TestCompose">
             <intent-filter>
@@ -26,6 +27,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".application.FakeLockScreen"
+            android:label="FakeLockScreen"
+            android:theme="@style/Theme.TestCompose"
+            android:launchMode="singleInstance"
+            android:parentActivityName=".application.MainActivity">
+        </activity>
+
     </application>
 
 </manifest>

@@ -4,9 +4,14 @@ package com.ftrono.testCompose.application
 import android.app.Application
 
 //GLOBALS:
+
+//STATUS VARS:
 var spotifyLoggedIn: Boolean = false
 var overlayActive: Boolean = false
 var volumeUpEnabled: Boolean = true
+
+//Clock Act receiver:
+const val ACTION_TIME_TICK = "android.intent.action.TIME_TICK"
 
 
 class App: Application()
