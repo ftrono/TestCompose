@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -38,6 +40,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -91,6 +94,11 @@ fun HistoryScreen() {
 
     val historySizeState by historySize.observeAsState()
     historySize.postValue(history_logs.size)
+
+    val deleteAllOn = remember { mutableStateOf(false) }
+    if (deleteAllOn.value) {
+        dialogDeleteHistory(mContext, deleteAllOn)
+    }
 
     Column (
         modifier = Modifier
@@ -163,7 +171,7 @@ fun HistoryScreen() {
                     modifier = Modifier
                         .padding(end=12.dp),
                     onClick = {
-                    /*TODO*/
+                        deleteAllOn.value = true
                     }
                 ) {
                     Icon(
@@ -201,6 +209,11 @@ fun HistoryCard(item: JsonObject) {
     val textIntro = itemInfo.get("textIntro").asString
     val textMain = itemInfo.get("textMain").asString
     val textExtra = itemInfo.get("textExtra").asString
+
+    val deleteLogOn = remember { mutableStateOf(false) }
+    if (deleteLogOn.value) {
+        dialogDeleteHistory(mContext, deleteLogOn, filename)
+    }
 
     //CARD:
     Card(
@@ -243,7 +256,7 @@ fun HistoryCard(item: JsonObject) {
                 //SEND BUTTON:
                 IconButton(
                     modifier = Modifier
-                        .padding(end=6.dp)
+                        .padding(end = 6.dp)
                         .size(30.dp),
                     onClick = { /*TODO*/ }) {
                     Icon(
@@ -256,9 +269,11 @@ fun HistoryCard(item: JsonObject) {
                 //DELETE BUTTON:
                 IconButton(
                     modifier = Modifier
-                        .padding(end=12.dp)
+                        .padding(end = 12.dp)
                         .size(30.dp),
-                    onClick = { /*TODO*/ }) {
+                    onClick = {
+                        deleteLogOn.value = true
+                    }) {
                     Icon(
                         modifier = Modifier.size(27.dp),
                         imageVector = Icons.Default.Delete,
@@ -291,9 +306,66 @@ fun HistoryCard(item: JsonObject) {
             text = textExtra
         )
     }
+}
 
 
-
+@Composable
+fun dialogDeleteHistory(mContext: Context, dialogOnState: MutableState<Boolean>, filename: String = "") {
+    //DELETE DIALOG:
+    if (dialogOnState.value) {
+        AlertDialog(
+            onDismissRequest = {
+                //cancelable -> true:
+                dialogOnState.value = false
+            },
+            containerColor = colorResource(id = R.color.dark_grey),
+            title = {
+                Text(
+                    text = if (filename != "") "Delete log" else "Delete history",
+                    color = colorResource(id = R.color.light_grey)
+                ) },
+            text = {
+                Text(
+                    text = if (filename != "") {
+                        "Do you want to delete this log item?\n\n$filename"
+                    } else {
+                        "Do you want to delete all history logs?"
+                    },
+                    color = colorResource(id = R.color.light_grey)
+                ) },
+            dismissButton = {
+                Text(
+                    modifier = Modifier
+                        .padding(end=20.dp)
+                        .clickable { dialogOnState.value = false },
+                    text = "No",
+                    fontSize = 14.sp,
+                    color = colorResource(id = R.color.colorAccentLight)
+                )
+            },
+            confirmButton = {
+                Text(
+                    modifier = Modifier
+                        .clickable {
+                            dialogOnState.value = false
+                            var toastText = ""
+                            if (filename != "") {
+                                /*TODO*/
+                                toastText = "Log deleted!"
+                            } else {
+                                /*TODO*/
+                                toastText = "History deleted!"
+                            }
+                            getItems(mContext) //Refresh list
+                            Toast.makeText(mContext, toastText, Toast.LENGTH_LONG).show()
+                        },
+                    text = "Yes",
+                    fontSize = 14.sp,
+                    color = colorResource(id = R.color.colorAccentLight)
+                )
+            }
+        )
+    }
 }
 
 
