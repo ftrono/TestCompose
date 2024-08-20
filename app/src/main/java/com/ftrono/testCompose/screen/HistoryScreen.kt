@@ -3,6 +3,7 @@ package com.ftrono.testCompose.screen
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.health.connect.datatypes.units.Length
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -26,6 +28,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -83,7 +86,7 @@ fun HistoryScreen() {
 //    val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
     val mContext = LocalContext.current
     var history_logs by remember {
-        mutableStateOf(getLogs(mContext))
+        mutableStateOf(getItems(mContext))
     }
 
     val historySizeState by historySize.observeAsState()
@@ -129,34 +132,48 @@ fun HistoryScreen() {
                     modifier = Modifier
                         .padding(
                             start = 53.dp,
-                            bottom = 10.dp
+                            bottom = 20.dp
                         )
                         .wrapContentWidth()
                 )
             }
-            //OPTIONS BUTTON:
-            Button(
+            //OPTIONS BUTTONS:
+            Row(
                 modifier = Modifier
-                    .padding(end = 15.dp)
-                    .wrapContentWidth()
-                    .height(35.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(id = R.color.dark_grey),
-                    contentColor = colorResource(id = R.color.light_grey)
-                ),
-                content = {
-                    Text(
-                        modifier = Modifier
-                            .wrapContentWidth()
-                            .wrapContentHeight(),
-                        color = colorResource(id = R.color.light_grey),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        text = "OPTIONS"
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                //SEND BUTTON:
+                IconButton(
+                    onClick = {
+                        history_logs = getItems(mContext)
+                        Toast.makeText(mContext, "History updated!", Toast.LENGTH_SHORT).show()
+                    }
+                ) {
+                    Icon(
+                        modifier = Modifier.size(35.dp),
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Refresh",
+                        tint = colorResource(id = R.color.colorAccentLight)
                     )
-                },
-                onClick = { /*TODO*/ }
-            )
+                }
+                //DELETE BUTTON:
+                IconButton(
+                    modifier = Modifier
+                        .padding(end=12.dp),
+                    onClick = {
+                    /*TODO*/
+                    }
+                ) {
+                    Icon(
+                        modifier = Modifier.size(35.dp),
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete All",
+                        tint = colorResource(id = R.color.colorAccentLight)
+                    )
+                }
+            }
         }
         //HISTORY LIST:
         LazyColumn (
@@ -225,19 +242,27 @@ fun HistoryCard(item: JsonObject) {
             ){
                 //SEND BUTTON:
                 IconButton(
+                    modifier = Modifier
+                        .padding(end=6.dp)
+                        .size(30.dp),
                     onClick = { /*TODO*/ }) {
                     Icon(
-                        Icons.Default.Share,
-                        "",
+                        modifier = Modifier.size(27.dp),
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Share log",
                         tint = colorResource(id = R.color.mid_grey)
                     )
                 }
                 //DELETE BUTTON:
                 IconButton(
+                    modifier = Modifier
+                        .padding(end=12.dp)
+                        .size(30.dp),
                     onClick = { /*TODO*/ }) {
                     Icon(
-                        Icons.Default.Delete,
-                        "",
+                        modifier = Modifier.size(27.dp),
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete log",
                         tint = colorResource(id = R.color.mid_grey)
                     )
                 }
@@ -246,8 +271,7 @@ fun HistoryCard(item: JsonObject) {
         //REQUEST TEXT:
         Text(
             modifier = Modifier
-                .padding(start = 12.dp)
-                .offset(y=-(8.dp))
+                .padding(start = 12.dp, bottom = 8.dp)
                 .wrapContentWidth()
                 .wrapContentHeight(),
             color = colorResource(id = R.color.light_grey),
@@ -259,7 +283,6 @@ fun HistoryCard(item: JsonObject) {
         Text(
             modifier = Modifier
                 .padding(start = 12.dp, bottom = 8.dp)
-                .offset(y=-(4.dp))
                 .wrapContentWidth()
                 .wrapContentHeight(),
             color = colorResource(id = R.color.colorAccentLight),
@@ -422,7 +445,7 @@ fun getItemInfo(item: JsonObject, context: Context): JsonObject {
 
 
 //TODO: TEMP:
-fun getLogs(context: Context): List<JsonElement> {
+fun getItems(context: Context): List<JsonElement> {
     val reader = BufferedReader(InputStreamReader(context.resources.openRawResource(R.raw.history_logs)))
     val logItems = JsonParser.parseReader(reader).asJsonArray.toList()
     return logItems

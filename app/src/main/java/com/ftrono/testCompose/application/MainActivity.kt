@@ -7,6 +7,19 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,6 +84,8 @@ import java.io.InputStreamReader
 
 
 class MainActivity : ComponentActivity() {
+    
+    var curNavId = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -355,20 +370,104 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun Navigation(navController: NavHostController, spotifyLoggedInState: Boolean) {
         NavHost(navController, startDestination = NavigationItem.Home.route) {
-            composable(NavigationItem.Home.route) {
+            //MAIN:
+            //0 -> HOME:
+            composable(
+                NavigationItem.Home.route,
+                enterTransition = {
+                    fadeIn(
+                        animationSpec = tween(
+                            300, easing = LinearEasing
+                        )
+                    ) + slideIntoContainer(
+                        animationSpec = tween(300, easing = EaseIn),
+                        towards = if (curNavId > 0) {
+                            AnimatedContentTransitionScope.SlideDirection.End
+                        } else {
+                            AnimatedContentTransitionScope.SlideDirection.Start
+                        }
+                    )
+                }) {
                 HomeScreen(this@MainActivity)
+                curNavId = 0
             }
-            composable(NavigationItem.Guide.route) {
+
+            //1 -> GUIDE:
+            composable(
+                NavigationItem.Guide.route,
+                enterTransition = {
+                    fadeIn(
+                        animationSpec = tween(
+                            300, easing = LinearEasing
+                        )
+                    ) + slideIntoContainer(
+                        animationSpec = tween(300, easing = EaseIn),
+                        towards = if (curNavId > 1) {
+                            AnimatedContentTransitionScope.SlideDirection.End
+                        } else {
+                            AnimatedContentTransitionScope.SlideDirection.Start
+                        }
+                    )
+                }) {
                 GuideScreen()
+                curNavId = 1
             }
-            composable(NavigationItem.MyDJames.route) {
+
+            //2 -> MY DJAMES:
+            composable(
+                NavigationItem.MyDJames.route,
+                enterTransition = {
+                    fadeIn(
+                        animationSpec = tween(
+                            300, easing = LinearEasing
+                        )
+                    ) + slideIntoContainer(
+                        animationSpec = tween(300, easing = EaseIn),
+                        towards = if (curNavId > 2) {
+                            AnimatedContentTransitionScope.SlideDirection.End
+                        } else {
+                            AnimatedContentTransitionScope.SlideDirection.Start
+                        }
+                    )
+                }) {
                 MyDJamesScreen()
+                curNavId = 2
             }
-            composable(NavigationItem.History.route) {
+
+            //3 -> HISTORY:
+            composable(
+                NavigationItem.History.route,
+                enterTransition = {
+                    fadeIn(
+                        animationSpec = tween(
+                            300, easing = LinearEasing
+                        )
+                    ) + slideIntoContainer(
+                        animationSpec = tween(300, easing = EaseIn),
+                        towards = if (curNavId > 3) {
+                            AnimatedContentTransitionScope.SlideDirection.End
+                        } else {
+                            AnimatedContentTransitionScope.SlideDirection.Start
+                        }
+                    )
+                }) {
                 HistoryScreen()
+                curNavId = 3
             }
-            composable(NavigationItem.Settings.route) {
+
+            //EXTRA:
+            //0 -> SETTINGS:
+            composable(
+                NavigationItem.Settings.route,
+                enterTransition = {
+                    scaleIn() + expandVertically(expandFrom = Alignment.Bottom)
+                },
+                exitTransition = {
+                    scaleOut() + shrinkVertically(shrinkTowards = Alignment.Bottom)
+                }
+            ) {
                 SettingsScreen()
+                curNavId = 0
             }
         }
     }
