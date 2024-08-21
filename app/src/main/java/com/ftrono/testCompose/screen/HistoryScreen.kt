@@ -331,7 +331,7 @@ fun dialogDeleteHistory(mContext: Context, dialogOnState: MutableState<Boolean>,
                     } else {
                         "Do you want to delete all history logs?"
                     },
-                    color = colorResource(id = R.color.light_grey)
+                    color = colorResource(id = R.color.mid_grey)
                 ) },
             dismissButton = {
                 Text(

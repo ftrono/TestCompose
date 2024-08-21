@@ -14,6 +14,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,8 +33,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ButtonDefaults
@@ -41,7 +46,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -49,7 +56,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
@@ -57,11 +66,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.MutableLiveData
 import com.ftrono.testCompose.R
+import com.ftrono.testCompose.screen.dialogDeleteHistory
 import com.ftrono.testCompose.ui.theme.ClockTheme
+import com.ftrono.testCompose.ui.theme.DJamesTheme
 import com.ftrono.testCompose.ui.theme.black
+import com.ftrono.testCompose.ui.theme.windowBackground
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -131,6 +144,12 @@ class ClockActivity: ComponentActivity() {
         val currentArtistPlayingState by currentArtistPlaying.observeAsState()
         val currentAlbumPlayingState by currentAlbumPlaying.observeAsState()
 
+        val mContext = LocalContext.current
+        val playerDialogOn = remember { mutableStateOf(false) }
+        if (playerDialogOn.value) {
+            PlayerDialog(mContext, playerDialogOn)
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -177,7 +196,7 @@ class ClockActivity: ComponentActivity() {
 
             //PLAYER INFO:
             Card(
-                onClick = { /*TODO*/ },
+                onClick = { playerDialogOn.value = true },
                 modifier = Modifier
                     .padding(
                         top = if (!isLandscape) 20.dp else 10.dp,
@@ -282,6 +301,83 @@ class ClockActivity: ComponentActivity() {
             Icon(
                 Icons.Default.Close,
                 contentDescription = "content description")
+        }
+    }
+
+
+    @Composable
+    fun PlayerDialog(context: Context, playerDialogOn: MutableState<Boolean>) {
+        Dialog(onDismissRequest = { playerDialogOn.value = false }) {
+            //CONTAINER:
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors (
+                    containerColor = colorResource(id = R.color.dark_grey)
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .wrapContentWidth()
+                        .wrapContentHeight()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    //TITLE:
+                    Text(
+                        text = "To get the best DJames experience",
+                        modifier = Modifier.padding(8.dp),
+                        color = colorResource(id = R.color.light_grey),
+                        textAlign = TextAlign.Start,
+                        fontSize = 22.sp
+                    )
+                    //TEXT 1:
+                    Text(
+                        text = "Open your Spotify app, then go to \"Settings & Privacy\" -> \"Playback\" and ensure these 2 toggles are ON:",
+                        modifier = Modifier.padding(8.dp),
+                        color = colorResource(id = R.color.light_grey),
+                        textAlign = TextAlign.Start,
+                        fontSize = 14.sp
+                    )
+                    //IMAGE:
+                    Image(
+                        painter = painterResource(id = R.drawable.spotify_settings),
+                        contentDescription = "Test",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                    )
+                    //TEXT 2:
+                    Text(
+                        text = "This will enable player info and ensure continuous playback.",
+                        modifier = Modifier.padding(8.dp),
+                        color = colorResource(id = R.color.light_grey),
+                        textAlign = TextAlign.Start,
+                        fontSize = 14.sp
+                    )
+                    //BUTTONS ROW:
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .padding(top = 8.dp, end = 20.dp)
+                                .clickable { playerDialogOn.value = false },
+                            color = colorResource(id = R.color.colorAccentLight),
+                            text = "Ok",
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+            }
         }
     }
 

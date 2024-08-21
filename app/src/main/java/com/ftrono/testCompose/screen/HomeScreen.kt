@@ -6,8 +6,11 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -54,7 +57,8 @@ fun HomeScreen(activity: ComponentActivity) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.windowBackground)),
+            .background(colorResource(id = R.color.windowBackground))
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -63,7 +67,8 @@ fun HomeScreen(activity: ComponentActivity) {
             //DISPLAY HORIZONTALLY:
             Row (
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
