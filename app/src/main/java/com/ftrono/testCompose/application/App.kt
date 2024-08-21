@@ -13,6 +13,8 @@ var spotifyLoggedIn = MutableLiveData<Boolean>(false)
 var overlayActive = MutableLiveData<Boolean>(false)
 var volumeUpEnabled = MutableLiveData<Boolean>(true)
 var settingsOpen = MutableLiveData<Boolean>(false)
+var filter = MutableLiveData<String>("artists")
+var curNavId = 0
 
 
 //Clock Act receiver:

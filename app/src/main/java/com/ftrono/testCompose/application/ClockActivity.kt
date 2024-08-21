@@ -70,11 +70,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.MutableLiveData
 import com.ftrono.testCompose.R
-import com.ftrono.testCompose.screen.dialogDeleteHistory
 import com.ftrono.testCompose.ui.theme.ClockTheme
-import com.ftrono.testCompose.ui.theme.DJamesTheme
 import com.ftrono.testCompose.ui.theme.black
-import com.ftrono.testCompose.ui.theme.windowBackground
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -205,7 +202,7 @@ class ClockActivity: ComponentActivity() {
                     .wrapContentSize(),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors (
-                    containerColor = colorResource(id = R.color.transparent_dark_grey)
+                    containerColor = colorResource(id = R.color.dark_grey_background)
                 )
             ) {
                 Row(

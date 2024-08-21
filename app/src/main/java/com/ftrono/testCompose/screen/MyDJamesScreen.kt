@@ -1,70 +1,55 @@
 package com.ftrono.testCompose.screen
 
-import android.content.res.Configuration
-import androidx.compose.foundation.Image
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.ftrono.testCompose.R
+import com.ftrono.testCompose.ui.navigateTo
 import com.ftrono.testCompose.ui.theme.MyDJamesItem
-
-
-@Composable
-fun MyDJamesScreen() {
-    val configuration = LocalConfiguration.current
-    val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
-    MyDJamesMain()
-}
 
 
 @Preview
 @Preview(heightDp = 360, widthDp = 800)
 @Composable
-fun MyDJamesMain() {
+fun MyDJamesPreview() {
+    val navController = rememberNavController()
+    MyDJamesScreen(navController)
+}
 
-    val vocCards = listOf("artists", "playlists", "contacts", "places")
 
+@Composable
+fun MyDJamesScreen(navController: NavController) {
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -87,7 +72,7 @@ fun MyDJamesMain() {
                 modifier = Modifier
                     .padding(
                         start = 10.dp,
-                        top = 14.dp,
+                        top = 20.dp,
                         bottom = 10.dp
                     )
                     .wrapContentWidth()
@@ -128,14 +113,20 @@ fun MyDJamesMain() {
                     .wrapContentWidth()
             )
             //CARDS:
-            DJamesCardsRow(items = listOf(
-                MyDJamesItem.Artists,
-                MyDJamesItem.Playlists
-            ))
-            DJamesCardsRow(items = listOf(
-                MyDJamesItem.Contacts,
-                MyDJamesItem.Places
-            ))
+            DJamesCardsRow(
+                navController,
+                listOf(
+                    MyDJamesItem.Artists,
+                    MyDJamesItem.Playlists
+                )
+            )
+            DJamesCardsRow(
+                navController,
+                listOf(
+                    MyDJamesItem.Contacts,
+                    MyDJamesItem.Places
+                )
+            )
 
             //FOR YOU:
             //Header:
@@ -153,17 +144,21 @@ fun MyDJamesMain() {
                     .wrapContentWidth()
             )
             //Cards:
-            DJamesCardsRow(items = listOf(
-                MyDJamesItem.Parking,
-                MyDJamesItem.News
-            ))
+            DJamesCardsRow(
+                navController,
+                listOf(
+                    MyDJamesItem.Parking,
+                    MyDJamesItem.News
+                )
+            )
         }
     }
 }
 
 
 @Composable
-fun DJamesCardsRow(items: List<MyDJamesItem>) {
+fun DJamesCardsRow(navController: NavController, items: List<MyDJamesItem>) {
+    val mContext = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth(),
@@ -173,7 +168,6 @@ fun DJamesCardsRow(items: List<MyDJamesItem>) {
         for (item in items) {
             //ARTISTS:
             Card(
-                onClick = { /*TODO*/ },
                 modifier = Modifier
                     .padding(12.dp)
                     .weight(0.5f)
@@ -186,13 +180,20 @@ fun DJamesCardsRow(items: List<MyDJamesItem>) {
                 shape = RoundedCornerShape(10.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = colorResource(id = R.color.dark_grey_background)
-                )
+                ),
+                onClick = {
+                    if (item.route in listOf("artists", "playlists", "contacts")) {
+                        navigateTo(navController, item.route, inner=true)
+                    } else {
+                        Toast.makeText(mContext, "Not ready yet!", Toast.LENGTH_LONG).show()
+                    }
+                }
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    //DESCRIPTION:
+                    //ICONS & DESCRIPTION:
                     Column(
                         modifier = Modifier
                             .fillMaxSize(),

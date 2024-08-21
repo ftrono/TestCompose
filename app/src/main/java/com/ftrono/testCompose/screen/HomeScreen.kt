@@ -3,7 +3,6 @@ package com.ftrono.testCompose.screen
 import android.content.Intent
 import android.content.res.Configuration
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -38,14 +37,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.ftrono.testCompose.application.ClockActivity
-import com.ftrono.testCompose.application.MainActivity
 import com.ftrono.testCompose.application.overlayActive
 import com.ftrono.testCompose.application.spotifyLoggedIn
 import com.ftrono.testCompose.application.volumeUpEnabled
 
 
+@Preview
+@Preview(heightDp = 360, widthDp = 800)
 @Composable
-fun HomeScreen(activity: ComponentActivity) {
+fun HomeScreen() {
     val configuration = LocalConfiguration.current
     val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
 
@@ -82,7 +82,7 @@ fun HomeScreen(activity: ComponentActivity) {
             BaloonArrowHome(false)
             LogoHome()
         }
-        StartButton(overlayActiveState!!, activity)
+        StartButton(overlayActiveState!!)
     }
 }
 
@@ -175,7 +175,7 @@ fun BaloonArrowHome(isLandscape: Boolean) {
 
 
 @Composable
-fun StartButton(overlayActiveState: Boolean, activity: ComponentActivity) {
+fun StartButton(overlayActiveState: Boolean) {
     val mContext = LocalContext.current
     Button(
         modifier = Modifier
@@ -204,10 +204,10 @@ fun StartButton(overlayActiveState: Boolean, activity: ComponentActivity) {
             if (overlayActive.value == false) {
                 overlayActive.postValue(true)
                 //Start Main:
-                val intent1 = Intent(activity, ClockActivity::class.java)
-                activity.startActivity(intent1)
+                val intent1 = Intent(mContext, ClockActivity::class.java)
+                mContext.startActivity(intent1)
                 Toast.makeText(mContext, "Overlay active!", Toast.LENGTH_SHORT).show()
-                //activity.finish()
+                //mContext.finish()
             } else {
                 overlayActive.postValue(false)
                 //TODO
@@ -253,13 +253,3 @@ fun SpotifyLoginStatus(spotifyLoggedInState: Boolean) {
         )
     }
 }
-
-
-//PREVIEWS:
-@Preview
-@Preview(heightDp = 360, widthDp = 800)
-@Composable
-fun HomePreview() {
-    HomeScreen(activity = MainActivity())
-}
-

@@ -3,6 +3,7 @@ package com.ftrono.testCompose.screen
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -19,9 +21,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,23 +37,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.MutableLiveData
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.ftrono.testCompose.R
 import com.ftrono.testCompose.application.midThreshold
 import com.ftrono.testCompose.application.playThreshold
+import com.ftrono.testCompose.ui.navigateTo
+import com.ftrono.testCompose.ui.theme.MyDJamesItem
+import com.ftrono.testCompose.ui.theme.NavigationItem
 import com.ftrono.testCompose.utilities.Utilities
-import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import java.io.BufferedReader
@@ -59,27 +66,28 @@ import java.util.Locale
 
 
 //Status:
-private var historySize = MutableLiveData<Int>(0)
+private var vocabulary = MutableLiveData<JsonObject>(JsonObject())
 
 //TODO: need wrapper for preview (use raw JSON) vs utils for real use!
+
 
 @Preview
 @Preview(heightDp = 360, widthDp = 800)
 @Composable
-fun HistoryScreen() {
-//    val configuration = LocalConfiguration.current
-//    val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
-    val mContext = LocalContext.current
-    var history_logs by remember {
-        mutableStateOf(getHistoryItems(mContext))
-    }
+fun VocabularyScreenPreview() {
+    val navController = rememberNavController()
+    VocabularyScreen(navController, "artists", MyDJamesItem.Artists)
+}
 
-    val historySizeState by historySize.observeAsState()
-    historySize.postValue(history_logs.size)
+@Composable
+fun VocabularyScreen(navController: NavController, filter: String, myDJamesItem: MyDJamesItem) {
+    val mContext = LocalContext.current
+    val vocabularyState by vocabulary.observeAsState()
+    vocabulary.postValue(getVocItems(mContext, filter))
 
     val deleteAllOn = remember { mutableStateOf(false) }
     if (deleteAllOn.value) {
-        DialogDeleteHistory(mContext, deleteAllOn)
+        DialogDeleteVocabulary(mContext, deleteAllOn, filter)
     }
 
     Column (
@@ -95,37 +103,67 @@ fun HistoryScreen() {
                 .background(colorResource(id = R.color.windowBackground)),
             contentAlignment = Alignment.CenterEnd
         ) {
-            //TEXT HEADERS:
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.Start
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "🕑  History",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = colorResource(id = R.color.light_grey),
+                //BACK:
+                IconButton(
+                    onClick = {
+                        navController.popBackStack()
+                    }
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .offset(x = (6.dp))
+                            .size(32.dp),
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = colorResource(id = R.color.colorAccentLight)
+                    )
+                }
+                //TEXT HEADERS:
+                Column(
                     modifier = Modifier
-                        .padding(
-                            start = 10.dp,
-                            top = 14.dp
-                        )
-                        .wrapContentWidth()
-                )
-                Text(
-                    text = "$historySizeState requests (last 30 days)",
-                    fontSize = 14.sp,
-                    fontStyle = FontStyle.Italic,
-                    color = colorResource(id = R.color.mid_grey),
-                    modifier = Modifier
-                        .padding(
-                            start = 53.dp,
-                            bottom = 20.dp
-                        )
-                        .wrapContentWidth()
-                )
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(
+                        text = if (filter == "artists") {
+                            "Your hard-to-spell artists"
+                        } else if (filter == "playlists") {
+                            "Your favourite playlists"
+                        } else if (filter == "contacts") {
+                            "Your favourite contacts"
+                        } else {
+                            ""
+                        },
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorResource(id = R.color.light_grey),
+                        modifier = Modifier
+                            .padding(
+                                start = 6.dp,
+                                top = 14.dp
+                            )
+                            .wrapContentWidth()
+                    )
+                    Text(
+                        text = "${vocabularyState!!.size()} items",
+                        fontSize = 14.sp,
+                        fontStyle = FontStyle.Italic,
+                        color = colorResource(id = R.color.colorAccentLight),
+                        modifier = Modifier
+                            .padding(
+                                start = 6.dp,
+                                bottom = 20.dp
+                            )
+                            .wrapContentWidth()
+                    )
+                }
             }
             //OPTIONS BUTTONS:
             Row(
@@ -137,12 +175,14 @@ fun HistoryScreen() {
                 //REFRESH BUTTON:
                 IconButton(
                     onClick = {
-                        history_logs = getHistoryItems(mContext)
-                        Toast.makeText(mContext, "History updated!", Toast.LENGTH_SHORT).show()
+                        vocabulary.postValue(getVocItems(mContext, filter))
+                        Toast.makeText(mContext, "Vocabulary updated!", Toast.LENGTH_SHORT).show()
                     }
                 ) {
                     Icon(
-                        modifier = Modifier.size(35.dp),
+                        modifier = Modifier
+                            .offset(x = (6.dp))
+                            .size(32.dp),
                         imageVector = Icons.Default.Refresh,
                         contentDescription = "Refresh",
                         tint = colorResource(id = R.color.colorAccentLight)
@@ -157,7 +197,7 @@ fun HistoryScreen() {
                     }
                 ) {
                     Icon(
-                        modifier = Modifier.size(35.dp),
+                        modifier = Modifier.size(32.dp),
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Delete All",
                         tint = colorResource(id = R.color.colorAccentLight)
@@ -171,10 +211,10 @@ fun HistoryScreen() {
                 .fillMaxSize()
         ) {
             itemsIndexed(
-                history_logs
+                vocabularyState!!.keySet().toList()
             ) { index, item ->
                 //HISTORY CARD:
-                HistoryCard(item = item.asJsonObject)
+                VocabularyCard(key = item, filter = filter, myDJamesItem = myDJamesItem)
             }
         }
 
@@ -183,32 +223,27 @@ fun HistoryScreen() {
 }
 
 @Composable
-fun HistoryCard(item: JsonObject) {
+fun VocabularyCard(key: String, filter: String, myDJamesItem: MyDJamesItem) {
     //INFO:
     val mContext = LocalContext.current
-    val itemInfo = getHistoryItemInfo(item, mContext)
-    val filename = itemInfo.get("filename").asString
-    val textIntro = itemInfo.get("textIntro").asString
-    val textMain = itemInfo.get("textMain").asString
-    val textExtra = itemInfo.get("textExtra").asString
 
-    val deleteLogOn = remember { mutableStateOf(false) }
-    if (deleteLogOn.value) {
-        DialogDeleteHistory(mContext, deleteLogOn, filename)
+    val editVocOn = remember { mutableStateOf(false) }
+    if (editVocOn.value) {
+        DialogEditVocabulary(mContext, editVocOn, filter, key)
+    }
+
+    val deleteVocOn = remember { mutableStateOf(false) }
+    if (deleteVocOn.value) {
+        DialogDeleteVocabulary(mContext, deleteVocOn, filter, key)
     }
 
     //CARD:
     Card(
         onClick = { /*TODO*/ },
         modifier = Modifier
-            .padding(12.dp)
+            .padding(8.dp)
             .fillMaxWidth()
-            .wrapContentHeight()
-            .shadow(
-                elevation = 2.dp,
-                spotColor = colorResource(id = R.color.black),
-                shape = RoundedCornerShape(10.dp)
-            ),
+            .wrapContentHeight(),
         //border = BorderStroke(1.dp, colorResource(id = R.color.dark_grey)),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors (
@@ -217,25 +252,41 @@ fun HistoryCard(item: JsonObject) {
     ) {
         Box(
             modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.CenterEnd
+            contentAlignment = Alignment.CenterStart
         ){
-            //INTRO & DATETIME:
-            Text(
+            //VOC TEXT:
+            Row(
                 modifier = Modifier
-                    .padding(start = 12.dp)
                     .fillMaxWidth()
                     .wrapContentHeight(),
-                color = colorResource(id = R.color.mid_grey),
-                fontSize = 12.sp,
-                text = textIntro
-            )
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Image(
+                    modifier = Modifier
+                        .padding(start = 8.dp, bottom = 8.dp)
+                        .size(35.dp),
+                    painter = painterResource(id = myDJamesItem.listIcon),
+                    contentDescription = "Vocabulary"
+                )
+                Text(
+                    modifier = Modifier
+                        .padding(start = 12.dp, bottom = 8.dp)
+                        .wrapContentWidth()
+                        .wrapContentHeight(),
+                    color = colorResource(id = R.color.light_grey),
+                    fontSize = 14.sp,
+                    fontStyle = FontStyle.Italic,
+                    text = key
+                )
+                }
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ){
-                //SEND BUTTON:
+                //EDIT BUTTON:
                 IconButton(
                     modifier = Modifier
                         .padding(end = 6.dp)
@@ -243,7 +294,7 @@ fun HistoryCard(item: JsonObject) {
                     onClick = { /*TODO*/ }) {
                     Icon(
                         modifier = Modifier.size(27.dp),
-                        imageVector = Icons.Default.Share,
+                        imageVector = Icons.Default.Edit,
                         contentDescription = "Share log",
                         tint = colorResource(id = R.color.mid_grey)
                     )
@@ -254,7 +305,7 @@ fun HistoryCard(item: JsonObject) {
                         .padding(end = 12.dp)
                         .size(30.dp),
                     onClick = {
-                        deleteLogOn.value = true
+                        deleteVocOn.value = true
                     }) {
                     Icon(
                         modifier = Modifier.size(27.dp),
@@ -265,34 +316,12 @@ fun HistoryCard(item: JsonObject) {
                 }
             }
         }
-        //REQUEST TEXT:
-        Text(
-            modifier = Modifier
-                .padding(start = 12.dp, bottom = 8.dp)
-                .wrapContentWidth()
-                .wrapContentHeight(),
-            color = colorResource(id = R.color.light_grey),
-            fontSize = 14.sp,
-            fontStyle = FontStyle.Italic,
-            text = textMain
-        )
-        //EXTRA INFO:
-        Text(
-            modifier = Modifier
-                .padding(start = 12.dp, bottom = 8.dp)
-                .wrapContentWidth()
-                .wrapContentHeight(),
-            color = colorResource(id = R.color.colorAccentLight),
-            fontSize = 12.sp,
-            lineHeight = 14.sp,
-            text = textExtra
-        )
     }
 }
 
 
 @Composable
-fun DialogDeleteHistory(mContext: Context, dialogOnState: MutableState<Boolean>, filename: String = "") {
+fun DialogDeleteVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>, filter: String, key: String = "") {
     //DELETE DIALOG:
     if (dialogOnState.value) {
         AlertDialog(
@@ -303,22 +332,22 @@ fun DialogDeleteHistory(mContext: Context, dialogOnState: MutableState<Boolean>,
             containerColor = colorResource(id = R.color.dark_grey),
             title = {
                 Text(
-                    text = if (filename != "") "Delete log" else "Delete history",
+                    text = if (key != "") "Delete item" else "Delete $filter vocabulary",
                     color = colorResource(id = R.color.light_grey)
                 ) },
             text = {
                 Text(
-                    text = if (filename != "") {
-                        "Do you want to delete this log item?\n\n$filename"
+                    text = if (key != "") {
+                        "Do you want to delete this ${filter.slice(0..<(filter.length-1))}?\n\n$key"
                     } else {
-                        "Do you want to delete all history logs?"
+                        "Do you want to delete all $filter in vocabulary?"
                     },
                     color = colorResource(id = R.color.mid_grey)
                 ) },
             dismissButton = {
                 Text(
                     modifier = Modifier
-                        .padding(end=20.dp)
+                        .padding(end = 20.dp)
                         .clickable { dialogOnState.value = false },
                     text = "No",
                     fontSize = 14.sp,
@@ -331,14 +360,14 @@ fun DialogDeleteHistory(mContext: Context, dialogOnState: MutableState<Boolean>,
                         .clickable {
                             dialogOnState.value = false
                             var toastText = ""
-                            if (filename != "") {
+                            if (key != "") {
                                 /*TODO*/
-                                toastText = "Log deleted!"
+                                toastText = "Item deleted!"
                             } else {
                                 /*TODO*/
-                                toastText = "History deleted!"
+                                toastText = "${filter.replaceFirstChar { it.uppercase() }} vocabulary deleted!"
                             }
-                            getHistoryItems(mContext) //Refresh list
+                            getVocItems(mContext, filter) //Refresh list
                             Toast.makeText(mContext, toastText, Toast.LENGTH_LONG).show()
                         },
                     text = "Yes",
@@ -351,8 +380,15 @@ fun DialogDeleteHistory(mContext: Context, dialogOnState: MutableState<Boolean>,
 }
 
 
+@Composable
+fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>, filter: String, key: String = "") {
+    val item = vocabulary.value!!.get(key).asJsonObject
+    //EDIT DIALOG:
+}
+
+
 //GET ITEM INFO:
-fun getHistoryItemInfo(item: JsonObject, context: Context): JsonObject {
+fun getVocItemInfo(item: JsonObject, context: Context): JsonObject {
     var itemInfo = JsonObject()
     val trimLength = 40
 
@@ -408,7 +444,7 @@ fun getHistoryItemInfo(item: JsonObject, context: Context): JsonObject {
                 }
         }
     } catch (e: Exception) {
-        Log.d("HistoryScreen", "No score info in log item: $datetime")
+        Log.d("VocabularyScreen", "No score info in log item: $datetime")
     }
 
     //Build info:
@@ -499,8 +535,8 @@ fun getHistoryItemInfo(item: JsonObject, context: Context): JsonObject {
 
 
 //TODO: TEMP:
-fun getHistoryItems(context: Context): List<JsonElement> {
-    val reader = BufferedReader(InputStreamReader(context.resources.openRawResource(R.raw.history_sample)))
-    val logItems = JsonParser.parseReader(reader).asJsonArray.toList()
-    return logItems
+fun getVocItems(context: Context, filter: String): JsonObject {
+    val reader = BufferedReader(InputStreamReader(context.resources.openRawResource(R.raw.vocabulary_sample)))
+    val vocItems = JsonParser.parseReader(reader).asJsonObject.get(filter).asJsonObject
+    return vocItems
 }

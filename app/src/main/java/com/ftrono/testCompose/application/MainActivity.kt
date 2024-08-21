@@ -9,14 +9,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.EaseIn
-import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
@@ -76,16 +72,16 @@ import com.ftrono.testCompose.screen.HistoryScreen
 import com.ftrono.testCompose.screen.HomeScreen
 import com.ftrono.testCompose.screen.MyDJamesScreen
 import com.ftrono.testCompose.screen.SettingsScreen
+import com.ftrono.testCompose.screen.VocabularyScreen
+import com.ftrono.testCompose.ui.Navigation
+import com.ftrono.testCompose.ui.navigateTo
 import com.ftrono.testCompose.ui.theme.DJamesTheme
+import com.ftrono.testCompose.ui.theme.MyDJamesItem
 import com.ftrono.testCompose.ui.theme.NavigationItem
 import com.ftrono.testCompose.ui.theme.windowBackground
-import java.io.BufferedReader
-import java.io.InputStreamReader
 
 
 class MainActivity : ComponentActivity() {
-    
-    var curNavId = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -147,7 +143,6 @@ class MainActivity : ComponentActivity() {
             )
         )
 
-
         //MAIN SCREEN: NAVIGATION:
         NavigationSuiteScaffold(
             modifier = Modifier
@@ -183,7 +178,7 @@ class MainActivity : ComponentActivity() {
                         alwaysShowLabel = true,
                         selected = currentRoute == navItem.route,
                         onClick = {
-                            navigateTo(navController, navItem)
+                            navigateTo(navController, navItem.route)
                         }
                     )
                 }
@@ -269,7 +264,7 @@ class MainActivity : ComponentActivity() {
                 //SETTINGS BUTTON:
                 IconButton(
                     onClick = {
-                        navigateTo(navController, NavigationItem.Settings)
+                        navigateTo(navController, NavigationItem.Settings.route, inner=true)
                     }) {
                     Icon(
                         painter = painterResource(id = R.drawable.item_settings),
@@ -368,135 +363,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         )
-    }
-
-
-    //NAV HOST:
-    @Composable
-    fun Navigation(navController: NavHostController) {
-        NavHost(navController, startDestination = NavigationItem.Home.route) {
-            //MAIN:
-            //0 -> HOME:
-            composable(
-                NavigationItem.Home.route,
-                enterTransition = {
-                    fadeIn(
-                        animationSpec = tween(
-                            300, easing = LinearEasing
-                        )
-                    ) + slideIntoContainer(
-                        animationSpec = tween(300, easing = EaseIn),
-                        towards = if (curNavId > 0) {
-                            AnimatedContentTransitionScope.SlideDirection.End
-                        } else {
-                            AnimatedContentTransitionScope.SlideDirection.Start
-                        }
-                    )
-                }) {
-                HomeScreen(this@MainActivity)
-                curNavId = 0
-                settingsOpen.postValue(false)
-            }
-
-            //1 -> GUIDE:
-            composable(
-                NavigationItem.Guide.route,
-                enterTransition = {
-                    fadeIn(
-                        animationSpec = tween(
-                            300, easing = LinearEasing
-                        )
-                    ) + slideIntoContainer(
-                        animationSpec = tween(300, easing = EaseIn),
-                        towards = if (curNavId > 1) {
-                            AnimatedContentTransitionScope.SlideDirection.End
-                        } else {
-                            AnimatedContentTransitionScope.SlideDirection.Start
-                        }
-                    )
-                }) {
-                GuideScreen()
-                curNavId = 1
-                settingsOpen.postValue(false)
-            }
-
-            //2 -> MY DJAMES:
-            composable(
-                NavigationItem.MyDJames.route,
-                enterTransition = {
-                    fadeIn(
-                        animationSpec = tween(
-                            300, easing = LinearEasing
-                        )
-                    ) + slideIntoContainer(
-                        animationSpec = tween(300, easing = EaseIn),
-                        towards = if (curNavId > 2) {
-                            AnimatedContentTransitionScope.SlideDirection.End
-                        } else {
-                            AnimatedContentTransitionScope.SlideDirection.Start
-                        }
-                    )
-                }) {
-                MyDJamesScreen()
-                curNavId = 2
-                settingsOpen.postValue(false)
-            }
-
-            //3 -> HISTORY:
-            composable(
-                NavigationItem.History.route,
-                enterTransition = {
-                    fadeIn(
-                        animationSpec = tween(
-                            300, easing = LinearEasing
-                        )
-                    ) + slideIntoContainer(
-                        animationSpec = tween(300, easing = EaseIn),
-                        towards = if (curNavId > 3) {
-                            AnimatedContentTransitionScope.SlideDirection.End
-                        } else {
-                            AnimatedContentTransitionScope.SlideDirection.Start
-                        }
-                    )
-                }) {
-                HistoryScreen()
-                curNavId = 3
-                settingsOpen.postValue(false)
-            }
-
-            //EXTRA:
-            //0 -> SETTINGS:
-            composable(
-                NavigationItem.Settings.route,
-                enterTransition = {
-                    scaleIn() + expandVertically(expandFrom = Alignment.Bottom)
-                },
-                exitTransition = {
-                    scaleOut() + shrinkVertically(shrinkTowards = Alignment.Bottom)
-                }
-            ) {
-                SettingsScreen()
-                curNavId = 0
-                settingsOpen.postValue(true)
-            }
-        }
-    }
-
-
-    //Helper: navigate to route:
-    fun navigateTo(navController: NavController, item: NavigationItem) {
-        navController.navigate(item.route) {
-            // Pop up to the start destination of the graph to avoid building up a large stack of destinations on the back stack as users select items:
-            navController.graph.startDestinationRoute?.let { route ->
-                popUpTo(route) {
-                    saveState = true
-                }
-            }
-            // Avoid multiple copies of the same destination when reselecting the same item:
-            launchSingleTop = true
-            // Restore state when reselecting a previously selected item:
-            restoreState = true
-        }
     }
 
 }
