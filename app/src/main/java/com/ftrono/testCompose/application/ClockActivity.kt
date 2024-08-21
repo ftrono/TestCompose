@@ -346,7 +346,7 @@ class ClockActivity: ComponentActivity() {
                     //IMAGE:
                     Image(
                         painter = painterResource(id = R.drawable.spotify_settings),
-                        contentDescription = "Test",
+                        contentDescription = "Spotify player settings",
                         contentScale = ContentScale.Fit,
                         modifier = Modifier
                             .padding(8.dp)

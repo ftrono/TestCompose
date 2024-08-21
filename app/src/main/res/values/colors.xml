@@ -20,6 +20,7 @@
     <color name="transparent_dark_grey">#7F262626</color>
     <color name="transparent_bg">#9F00100C</color>
     <color name="transparent_black">#9F000000</color>
+    <color name="dark_grey_background">#FF131B19</color>
     <color name="dark_grey">#323232</color>
     <color name="black">#000000</color>
 </resources>
