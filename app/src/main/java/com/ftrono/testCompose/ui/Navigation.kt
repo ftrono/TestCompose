@@ -213,14 +213,19 @@ fun Navigation(navController: NavHostController) {
 //Helper: navigate to route:
 fun navigateTo(navController: NavController, route: String, inner: Boolean = false) {
     navController.navigate(route) {
-        if (!inner) {
-            // Pop up to the start destination of the graph to avoid building up a large stack of destinations on the back stack as users select items:
-            navController.graph.startDestinationRoute?.let { route ->
+        // Pop up to the start destination of the graph to avoid building up a large stack of destinations on the back stack as users select items:
+        navController.graph.startDestinationRoute?.let { route ->
+            if (inner) {
+                popUpTo(navController.currentBackStackEntry!!.id) {
+                    saveState = true
+                }
+            } else {
                 popUpTo(route) {
                     saveState = true
                 }
             }
         }
+
         // Avoid multiple copies of the same destination when reselecting the same item:
         launchSingleTop = true
         // Restore state when reselecting a previously selected item:
