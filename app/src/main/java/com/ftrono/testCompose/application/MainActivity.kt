@@ -121,6 +121,7 @@ class MainActivity : ComponentActivity() {
         )
 
         val spotifyLoggedInState by spotifyLoggedIn.observeAsState()
+        val settingsOpenState by settingsOpen.observeAsState()
         val configuration = LocalConfiguration.current
         val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
         val customNavSuiteType = if (isLandscape) NavigationSuiteType.NavigationRail else NavigationSuiteType.NavigationBar
@@ -132,15 +133,15 @@ class MainActivity : ComponentActivity() {
         val myNavigationSuiteItemColors = NavigationSuiteDefaults.itemColors(
             navigationBarItemColors = NavigationBarItemDefaults.colors(
                 indicatorColor = colorResource(id = R.color.transparent_green),
-                selectedIconColor = colorResource(id = R.color.colorAccent),
-                selectedTextColor = colorResource(id = R.color.colorAccent),
+                selectedIconColor = colorResource(id = R.color.colorAccentLight),
+                selectedTextColor = colorResource(id = R.color.colorAccentLight),
                 unselectedIconColor = colorResource(id = R.color.mid_grey),
                 unselectedTextColor = colorResource(id = R.color.mid_grey)
             ),
             navigationRailItemColors = NavigationRailItemDefaults.colors(
                 indicatorColor = colorResource(id = R.color.transparent_green),
-                selectedIconColor = colorResource(id = R.color.colorAccent),
-                selectedTextColor = colorResource(id = R.color.colorAccent),
+                selectedIconColor = colorResource(id = R.color.colorAccentLight),
+                selectedTextColor = colorResource(id = R.color.colorAccentLight),
                 unselectedIconColor = colorResource(id = R.color.mid_grey),
                 unselectedTextColor = colorResource(id = R.color.mid_grey)
             )
@@ -198,7 +199,7 @@ class MainActivity : ComponentActivity() {
         ) {
             //MAIN SCREEN: SCAFFOLD:
             Scaffold(
-                topBar = { TopBar(navController, spotifyLoggedInState!!) },
+                topBar = { TopBar(navController, spotifyLoggedInState!!, settingsOpenState!!) },
                 // Set background color to avoid the white flashing when you switch between screens:
                 containerColor = colorResource(id = R.color.windowBackground)
             ) {
@@ -207,7 +208,7 @@ class MainActivity : ComponentActivity() {
                         .padding(it)
                 ) {
                     //SET CURRENT SCREEN FROM NAVIGATION HOST:
-                    Navigation(navController = navController, spotifyLoggedInState = spotifyLoggedInState!!)
+                    Navigation(navController)
                 }
             }
         }
@@ -217,7 +218,7 @@ class MainActivity : ComponentActivity() {
     //TOP APP BAR:
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun TopBar(navController: NavController, spotifyLoggedInState: Boolean) {
+    fun TopBar(navController: NavController, spotifyLoggedInState: Boolean, settingsOpenState: Boolean) {
         val mContext = LocalContext.current
 
         // STATES:
@@ -271,9 +272,13 @@ class MainActivity : ComponentActivity() {
                         navigateTo(navController, NavigationItem.Settings)
                     }) {
                     Icon(
-                        painterResource(id = R.drawable.item_settings),
-                        "",
-                        tint = colorResource(id = R.color.light_grey)
+                        painter = painterResource(id = R.drawable.item_settings),
+                        contentDescription = "",
+                        tint = if (settingsOpenState) {
+                            colorResource(id = R.color.colorAccentLight)
+                        } else {
+                            colorResource(id = R.color.light_grey)
+                        }
                     )
                 }
 
@@ -368,7 +373,7 @@ class MainActivity : ComponentActivity() {
 
     //NAV HOST:
     @Composable
-    fun Navigation(navController: NavHostController, spotifyLoggedInState: Boolean) {
+    fun Navigation(navController: NavHostController) {
         NavHost(navController, startDestination = NavigationItem.Home.route) {
             //MAIN:
             //0 -> HOME:
@@ -390,6 +395,7 @@ class MainActivity : ComponentActivity() {
                 }) {
                 HomeScreen(this@MainActivity)
                 curNavId = 0
+                settingsOpen.postValue(false)
             }
 
             //1 -> GUIDE:
@@ -411,6 +417,7 @@ class MainActivity : ComponentActivity() {
                 }) {
                 GuideScreen()
                 curNavId = 1
+                settingsOpen.postValue(false)
             }
 
             //2 -> MY DJAMES:
@@ -432,6 +439,7 @@ class MainActivity : ComponentActivity() {
                 }) {
                 MyDJamesScreen()
                 curNavId = 2
+                settingsOpen.postValue(false)
             }
 
             //3 -> HISTORY:
@@ -453,6 +461,7 @@ class MainActivity : ComponentActivity() {
                 }) {
                 HistoryScreen()
                 curNavId = 3
+                settingsOpen.postValue(false)
             }
 
             //EXTRA:
@@ -468,6 +477,7 @@ class MainActivity : ComponentActivity() {
             ) {
                 SettingsScreen()
                 curNavId = 0
+                settingsOpen.postValue(true)
             }
         }
     }
