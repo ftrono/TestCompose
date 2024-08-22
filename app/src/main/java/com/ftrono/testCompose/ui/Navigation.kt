@@ -9,10 +9,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -35,7 +37,12 @@ import com.ftrono.testCompose.ui.theme.NavigationItem
 @Composable
 fun Navigation(navController: NavHostController) {
     val filterState by filter.observeAsState()
-    NavHost(navController, startDestination = NavigationItem.Home.route) {
+    NavHost(
+        modifier = Modifier
+            .fillMaxSize(),
+        navController = navController,
+        startDestination = NavigationItem.Home.route
+    ) {
         //MAIN:
         //0 -> HOME:
         composable(
