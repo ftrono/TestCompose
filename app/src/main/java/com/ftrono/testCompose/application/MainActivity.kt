@@ -118,6 +118,7 @@ class MainActivity : ComponentActivity() {
 
         val spotifyLoggedInState by spotifyLoggedIn.observeAsState()
         val settingsOpenState by settingsOpen.observeAsState()
+        val innerNavOpenState by innerNavOpen.observeAsState()
         val configuration = LocalConfiguration.current
         val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
         val customNavSuiteType = if (isLandscape) NavigationSuiteType.NavigationRail else NavigationSuiteType.NavigationBar
@@ -178,7 +179,14 @@ class MainActivity : ComponentActivity() {
                         alwaysShowLabel = true,
                         selected = currentRoute == navItem.route,
                         onClick = {
-                            navigateTo(navController, navItem.route)
+                            //Navigate:
+                            val curNavRoute = navItem.route
+                            if (curNavRoute == lastNavRoute && (settingsOpenState!! || innerNavOpenState!!)) {
+                                navController.popBackStack()
+                            } else {
+                                navigateTo(navController, curNavRoute)
+                            }
+                            lastNavRoute = curNavRoute
                         }
                     )
                 }
@@ -264,7 +272,14 @@ class MainActivity : ComponentActivity() {
                 //SETTINGS BUTTON:
                 IconButton(
                     onClick = {
-                        navigateTo(navController, NavigationItem.Settings.route, inner=true)
+                        //Navigate:
+                        val curNavRoute = NavigationItem.Settings.route
+                        if (curNavRoute == lastNavRoute && (settingsOpenState)) {
+                            navController.popBackStack()
+                        } else {
+                            navigateTo(navController, curNavRoute)
+                        }
+                        lastNavRoute = curNavRoute
                     }) {
                     Icon(
                         painter = painterResource(id = R.drawable.item_settings),

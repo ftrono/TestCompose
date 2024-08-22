@@ -19,6 +19,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.ftrono.testCompose.application.curNavId
 import com.ftrono.testCompose.application.filter
+import com.ftrono.testCompose.application.innerNavOpen
 import com.ftrono.testCompose.application.settingsOpen
 import com.ftrono.testCompose.screen.GuideScreen
 import com.ftrono.testCompose.screen.HistoryScreen
@@ -53,9 +54,10 @@ fun Navigation(navController: NavHostController) {
                     }
                 )
             }) {
-            HomeScreen()
             curNavId = 0
+            innerNavOpen.postValue(false)
             settingsOpen.postValue(false)
+            HomeScreen()
         }
 
         //1 -> GUIDE:
@@ -75,9 +77,10 @@ fun Navigation(navController: NavHostController) {
                     }
                 )
             }) {
-            GuideScreen()
             curNavId = 1
+            innerNavOpen.postValue(false)
             settingsOpen.postValue(false)
+            GuideScreen()
         }
 
         //2 -> MY DJAMES:
@@ -97,9 +100,10 @@ fun Navigation(navController: NavHostController) {
                     }
                 )
             }) {
-            MyDJamesScreen(navController)
             curNavId = 2
+            innerNavOpen.postValue(false)
             settingsOpen.postValue(false)
+            MyDJamesScreen(navController)
         }
 
         //3 -> HISTORY:
@@ -119,9 +123,10 @@ fun Navigation(navController: NavHostController) {
                     }
                 )
             }) {
-            HistoryScreen()
             curNavId = 3
+            innerNavOpen.postValue(false)
             settingsOpen.postValue(false)
+            HistoryScreen()
         }
 
         //EXTRA:
@@ -135,9 +140,10 @@ fun Navigation(navController: NavHostController) {
                 scaleOut() + shrinkVertically(shrinkTowards = Alignment.Bottom)
             }
         ) {
-            SettingsScreen()
             curNavId = 0
+            innerNavOpen.postValue(false)
             settingsOpen.postValue(true)
+            SettingsScreen()
         }
 
         //MYDJAMES VOC:
@@ -155,6 +161,8 @@ fun Navigation(navController: NavHostController) {
                 )
             }) {
             curNavId = 2
+            innerNavOpen.postValue(true)
+            settingsOpen.postValue(false)
             filter.postValue("artists")
             VocabularyScreen(
                 navController = navController,
@@ -177,6 +185,8 @@ fun Navigation(navController: NavHostController) {
                 )
             }) {
             curNavId = 2
+            innerNavOpen.postValue(true)
+            settingsOpen.postValue(false)
             filter.postValue("playlists")
             VocabularyScreen(
                 navController = navController,
@@ -199,6 +209,8 @@ fun Navigation(navController: NavHostController) {
                 )
             }) {
             curNavId = 2
+            innerNavOpen.postValue(true)
+            settingsOpen.postValue(false)
             filter.postValue("contacts")
             VocabularyScreen(
                 navController = navController,
