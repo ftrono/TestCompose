@@ -62,6 +62,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -322,7 +323,7 @@ class ClockActivity: ComponentActivity() {
                         .wrapContentHeight()
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                    horizontalAlignment = Alignment.Start,
                 ) {
                     //TITLE:
                     Text(
@@ -366,11 +367,12 @@ class ClockActivity: ComponentActivity() {
                     ) {
                         Text(
                             modifier = Modifier
-                                .padding(top = 8.dp, end = 20.dp)
+                                .padding(top = 8.dp, end = 12.dp)
                                 .clickable { playerDialogOn.value = false },
                             color = colorResource(id = R.color.colorAccentLight),
                             text = "Ok",
-                            fontSize = 16.sp
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
