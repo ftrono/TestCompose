@@ -83,7 +83,7 @@ private var vocabulary = MutableLiveData<JsonObject>(JsonObject())
 @Composable
 fun VocabularyScreenPreview() {
     val navController = rememberNavController()
-    VocabularyScreen(navController, "artists", MyDJamesItem.Artists)
+    VocabularyScreen(navController, "playlists", MyDJamesItem.Playlists)
 }
 
 @Composable
@@ -101,7 +101,7 @@ fun VocabularyScreen(navController: NavController, filter: String, myDJamesItem:
 //    //TODO: FOR PREVIEW ONLY!
 //    val editVocOn = rememberSaveable { mutableStateOf(true) }
 //    if (editVocOn.value) {
-//        PickEditDialog(mContext, editVocOn, filter, key="")
+//        DialogEditVocabulary(mContext, editVocOn, filter, key="")
 //    }
 
     Column (
@@ -262,7 +262,7 @@ fun VocabularyCard(key: String, filter: String, myDJamesItem: MyDJamesItem) {
 
     val editVocOn = rememberSaveable { mutableStateOf(false) }
     if (editVocOn.value) {
-        PickEditDialog(mContext, editVocOn, filter, key)
+        DialogEditVocabulary(mContext, editVocOn, filter, key)
     }
 
     val deleteVocOn = rememberSaveable { mutableStateOf(false) }
@@ -419,9 +419,22 @@ fun DialogDeleteVocabulary(mContext: Context, dialogOnState: MutableState<Boolea
 
 
 @Composable
-fun DialogEditArtist(mContext: Context, dialogOnState: MutableState<Boolean>, key: String) {
+fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>, filter: String, key: String) {
     //val item = vocabulary.value!!.get(key).asJsonObject
     var text by rememberSaveable { mutableStateOf(key) }
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = colorResource(id = R.color.colorAccentLight),
+        unfocusedBorderColor = colorResource(id = R.color.mid_grey),
+        focusedTextColor = colorResource(id = R.color.light_grey),
+        unfocusedTextColor = colorResource(id = R.color.light_grey),
+        focusedPlaceholderColor = colorResource(id = R.color.mid_grey),
+        unfocusedPlaceholderColor = colorResource(id = R.color.mid_grey),
+        cursorColor = colorResource(id = R.color.colorAccentLight),
+        selectionColors = TextSelectionColors(
+            handleColor = colorResource(id = R.color.colorAccent),
+            backgroundColor = colorResource(id = R.color.transparent_green)
+        )
+    )
 
     //EDIT DIALOG:
     Dialog(
@@ -450,13 +463,13 @@ fun DialogEditArtist(mContext: Context, dialogOnState: MutableState<Boolean>, ke
             ) {
                 //TITLE:
                 Text(
-                    text = "✏️  Artist",
+                    text = "✏️  ${filter.slice(0..<(filter.length-1)).replaceFirstChar { it.uppercase() }}",
                     modifier = Modifier.padding(8.dp),
                     color = colorResource(id = R.color.light_grey),
                     textAlign = TextAlign.Start,
                     fontSize = 22.sp
                 )
-                //TEXT FIELD 1:
+                //COMMON: TEXT FIELD 1:
                 Text(
                     text = "Name",
                     modifier = Modifier.padding(top=12.dp),
@@ -470,6 +483,7 @@ fun DialogEditArtist(mContext: Context, dialogOnState: MutableState<Boolean>, ke
                         .padding(top = 8.dp, bottom = 20.dp)
                         .fillMaxWidth()
                         .wrapContentHeight(),
+                    colors = textFieldColors,
                     value = text,
                     onValueChange = { newText ->
                         text = newText.trimStart { it == '0' }
@@ -477,6 +491,7 @@ fun DialogEditArtist(mContext: Context, dialogOnState: MutableState<Boolean>, ke
                     textStyle = TextStyle(
                         fontSize = 16.sp
                     ),
+                    maxLines = 1,
                     singleLine = true,
                     placeholder = {
                         Text(
@@ -485,20 +500,40 @@ fun DialogEditArtist(mContext: Context, dialogOnState: MutableState<Boolean>, ke
                             fontStyle = FontStyle.Italic
                         )
                     },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorResource(id = R.color.colorAccentLight),
-                        unfocusedBorderColor = colorResource(id = R.color.mid_grey),
-                        focusedTextColor = colorResource(id = R.color.light_grey),
-                        unfocusedTextColor = colorResource(id = R.color.light_grey),
-                        focusedPlaceholderColor = colorResource(id = R.color.mid_grey),
-                        unfocusedPlaceholderColor = colorResource(id = R.color.mid_grey),
-                        cursorColor = colorResource(id = R.color.colorAccentLight),
-                        selectionColors = TextSelectionColors(
-                            handleColor = colorResource(id = R.color.colorAccent),
-                            backgroundColor = colorResource(id = R.color.transparent_green)
-                        )
-                    ),
                 )
+                if (filter == "playlists") {
+                    //PLAYLIST: TEXT FIELD 2:
+                    Text(
+                        text = "Playlist URL",
+                        color = colorResource(id = R.color.colorAccentLight),
+                        textAlign = TextAlign.Start,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .padding(top = 8.dp, bottom = 20.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        colors = textFieldColors,
+                        value = text,
+                        onValueChange = { newText ->
+                            text = newText.trimStart { it == '0' }
+                        },
+                        textStyle = TextStyle(
+                            fontSize = 16.sp
+                        ),
+                        singleLine = true,
+                        maxLines = 1,
+                        placeholder = {
+                            Text(
+                                text = "Paste here the Spotify link...",
+                                fontSize = 16.sp,
+                                fontStyle = FontStyle.Italic
+                            )
+                        },
+                    )
+                }
                 //BUTTONS ROW:
                 Row(
                     modifier = Modifier
@@ -533,15 +568,6 @@ fun DialogEditArtist(mContext: Context, dialogOnState: MutableState<Boolean>, ke
                 }
             }
         }
-    }
-}
-
-
-//EDIT DIALOG PICKER:
-@Composable
-fun PickEditDialog(mContext: Context, dialogOnState: MutableState<Boolean>, filter: String, key: String) {
-    if (filter == "artists") {
-        DialogEditArtist(mContext, dialogOnState, key)
     }
 }
 
