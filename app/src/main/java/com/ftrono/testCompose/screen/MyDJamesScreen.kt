@@ -1,6 +1,7 @@
 package com.ftrono.testCompose.screen
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -32,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ftrono.testCompose.R
@@ -193,6 +196,15 @@ fun DJamesCardsRow(navController: NavController, items: List<MyDJamesItem>) {
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
+                    //BG_IMAGE:
+                    Image(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .zIndex(0f),
+                        contentScale = ContentScale.Crop,
+                        painter = painterResource(item.background),
+                        contentDescription = "DJames logo"
+                    )
                     //ICONS & DESCRIPTION:
                     Column(
                         modifier = Modifier
@@ -220,7 +232,8 @@ fun DJamesCardsRow(navController: NavController, items: List<MyDJamesItem>) {
                             text = "0 items",
                             fontSize = 12.sp,
                             fontStyle = FontStyle.Italic,
-                            color = colorResource(id = R.color.mid_grey),
+                            lineHeight = 18.sp,
+                            color = colorResource(id = R.color.colorAccentLight),
                             modifier = Modifier
                                 .wrapContentWidth()
                         )

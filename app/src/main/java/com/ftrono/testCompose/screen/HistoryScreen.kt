@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,14 +71,14 @@ fun HistoryScreen() {
 //    val configuration = LocalConfiguration.current
 //    val isLandscape by remember { mutableStateOf(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) }
     val mContext = LocalContext.current
-    var history_logs by remember {
+    var history_logs by rememberSaveable {
         mutableStateOf(getHistoryItems(mContext))
     }
 
     val historySizeState by historySize.observeAsState()
     historySize.postValue(history_logs.size)
 
-    val deleteAllOn = remember { mutableStateOf(false) }
+    val deleteAllOn = rememberSaveable { mutableStateOf(false) }
     if (deleteAllOn.value) {
         DialogDeleteHistory(mContext, deleteAllOn)
     }
@@ -192,7 +193,7 @@ fun HistoryCard(item: JsonObject) {
     val textMain = itemInfo.get("textMain").asString
     val textExtra = itemInfo.get("textExtra").asString
 
-    val deleteLogOn = remember { mutableStateOf(false) }
+    val deleteLogOn = rememberSaveable { mutableStateOf(false) }
     if (deleteLogOn.value) {
         DialogDeleteHistory(mContext, deleteLogOn, filename)
     }

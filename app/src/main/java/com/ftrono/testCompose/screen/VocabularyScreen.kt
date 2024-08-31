@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -36,18 +37,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -61,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -113,13 +113,33 @@ fun VocabularyScreen(navController: NavController, filter: String, myDJamesItem:
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
+                .height(80.dp)
                 .background(colorResource(id = R.color.windowBackground)),
             contentAlignment = Alignment.CenterEnd
         ) {
+            //BG_IMAGE:
+            Image(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(0f),
+                contentScale = ContentScale.Crop,
+                painter = painterResource(myDJamesItem.background),
+                contentDescription = "DJames logo"
+            )
+            //HEADER CONTENT:
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxSize()
+                    .background(
+                        //GRADIENT:
+                        Brush.verticalGradient(
+                            colorStops=arrayOf(
+                                0.0f to colorResource(id = R.color.transparent_full),
+                                0.3f to colorResource(id = R.color.transparent_full),
+                                1f to colorResource(id = R.color.windowBackground)
+                            )
+                        )
+                    ),
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -447,7 +467,7 @@ fun DialogEditArtist(mContext: Context, dialogOnState: MutableState<Boolean>, ke
                 )
                 OutlinedTextField(
                     modifier = Modifier
-                        .padding(top=8.dp, bottom = 20.dp)
+                        .padding(top = 8.dp, bottom = 20.dp)
                         .fillMaxWidth()
                         .wrapContentHeight(),
                     value = text,
