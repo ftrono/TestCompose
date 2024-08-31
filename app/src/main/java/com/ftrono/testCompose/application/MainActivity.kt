@@ -305,7 +305,7 @@ class MainActivity : ComponentActivity() {
                 //DROPDOWN MENU:
                 DropdownMenu(
                     modifier = Modifier
-                        .background(colorResource(id = R.color.dark_grey)),
+                        .background(colorResource(id = R.color.dark_grey_background)),
                     expanded = mDisplayMenu,
                     onDismissRequest = { mDisplayMenu = false }
                 ) {

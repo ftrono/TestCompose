@@ -16,12 +16,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -32,28 +34,40 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -83,7 +97,7 @@ private var vocabulary = MutableLiveData<JsonObject>(JsonObject())
 @Composable
 fun VocabularyScreenPreview() {
     val navController = rememberNavController()
-    VocabularyScreen(navController, "playlists", MyDJamesItem.Playlists)
+    VocabularyScreen(navController, "contacts", MyDJamesItem.Playlists)
 }
 
 @Composable
@@ -98,11 +112,11 @@ fun VocabularyScreen(navController: NavController, filter: String, myDJamesItem:
         DialogDeleteVocabulary(mContext, deleteAllOn, filter)
     }
 
-//    //TODO: FOR PREVIEW ONLY!
-//    val editVocOn = rememberSaveable { mutableStateOf(true) }
-//    if (editVocOn.value) {
-//        DialogEditVocabulary(mContext, editVocOn, filter, key="")
-//    }
+    //TODO: FOR PREVIEW ONLY!
+    val editVocOn = rememberSaveable { mutableStateOf(true) }
+    if (editVocOn.value) {
+        DialogEditVocabulary(mContext, editVocOn, filter, key="")
+    }
 
     Column (
         modifier = Modifier
@@ -133,7 +147,7 @@ fun VocabularyScreen(navController: NavController, filter: String, myDJamesItem:
                     .background(
                         //GRADIENT:
                         Brush.verticalGradient(
-                            colorStops=arrayOf(
+                            colorStops = arrayOf(
                                 0.0f to colorResource(id = R.color.transparent_full),
                                 0.3f to colorResource(id = R.color.transparent_full),
                                 1f to colorResource(id = R.color.windowBackground)
@@ -420,8 +434,14 @@ fun DialogDeleteVocabulary(mContext: Context, dialogOnState: MutableState<Boolea
 
 @Composable
 fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>, filter: String, key: String) {
+    //TODO:
     //val item = vocabulary.value!!.get(key).asJsonObject
-    var text by rememberSaveable { mutableStateOf(key) }
+    var textName by rememberSaveable { mutableStateOf(key) }
+    var textPlayURL by rememberSaveable { mutableStateOf("") }
+    var textPrefix by rememberSaveable { mutableStateOf("+39") }
+    var textPhone by rememberSaveable { mutableStateOf("") }
+
+    //TextField colors:
     val textFieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = colorResource(id = R.color.colorAccentLight),
         unfocusedBorderColor = colorResource(id = R.color.mid_grey),
@@ -469,6 +489,7 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                     textAlign = TextAlign.Start,
                     fontSize = 22.sp
                 )
+
                 //COMMON: TEXT FIELD 1:
                 Text(
                     text = "Name",
@@ -484,15 +505,19 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                         .fillMaxWidth()
                         .wrapContentHeight(),
                     colors = textFieldColors,
-                    value = text,
+                    value = textName,
                     onValueChange = { newText ->
-                        text = newText.trimStart { it == '0' }
+                        textName = newText.trimStart { it == '0' }
                     },
                     textStyle = TextStyle(
                         fontSize = 16.sp
                     ),
                     maxLines = 1,
                     singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Unspecified,
+                        imeAction = ImeAction.Next
+                    ),
                     placeholder = {
                         Text(
                             text = "Write name here...",
@@ -501,6 +526,7 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                         )
                     },
                 )
+
                 if (filter == "playlists") {
                     //PLAYLIST: TEXT FIELD 2:
                     Text(
@@ -510,21 +536,26 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                     )
+
                     OutlinedTextField(
                         modifier = Modifier
                             .padding(top = 8.dp, bottom = 20.dp)
                             .fillMaxWidth()
                             .wrapContentHeight(),
                         colors = textFieldColors,
-                        value = text,
+                        value = textPlayURL,
                         onValueChange = { newText ->
-                            text = newText.trimStart { it == '0' }
+                            textPlayURL = newText.trimStart { it == '0' }
                         },
                         textStyle = TextStyle(
                             fontSize = 16.sp
                         ),
                         singleLine = true,
                         maxLines = 1,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Uri,
+                            imeAction = ImeAction.Next
+                        ),
                         placeholder = {
                             Text(
                                 text = "Paste here the Spotify link...",
@@ -533,6 +564,90 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                             )
                         },
                     )
+
+                } else if (filter == "contacts") {
+                    //CONTACTS: TEXT FIELD 2:
+                    Text(
+                        text = "Preferred messaging language",
+                        color = colorResource(id = R.color.colorAccentLight),
+                        textAlign = TextAlign.Start,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    VocLanguagesSpinner()
+
+                    //CONTACTS: TEXT FIELD 3:
+                    Text(
+                        text = "Main phone",
+                        color = colorResource(id = R.color.colorAccentLight),
+                        textAlign = TextAlign.Start,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        //PREFIX:
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .padding(top = 8.dp, bottom = 20.dp)
+                                .width(60.dp)
+                                .wrapContentHeight(),
+                            colors = textFieldColors,
+                            value = textPrefix,
+                            onValueChange = { newText ->
+                                textPrefix = newText.trimStart { it == '0' }
+                            },
+                            textStyle = TextStyle(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            singleLine = true,
+                            maxLines = 1,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Phone,
+                                imeAction = ImeAction.Next
+                            ),
+                            placeholder = {
+                                Text(
+                                    text = "+39",
+                                    fontSize = 16.sp,
+                                    fontStyle = FontStyle.Italic
+                                )
+                            },
+                        )
+                        //SUFFIX:
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .padding(top = 8.dp, bottom = 20.dp)
+                                .fillMaxWidth()
+                                .wrapContentHeight(),
+                            colors = textFieldColors,
+                            value = textPhone,
+                            onValueChange = { newText ->
+                                textPhone = newText.trimStart { it == '0' }
+                            },
+                            textStyle = TextStyle(
+                                fontSize = 16.sp
+                            ),
+                            singleLine = true,
+                            maxLines = 1,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            ),
+                            placeholder = {
+                                Text(
+                                    text = "Phone number...",
+                                    fontSize = 16.sp,
+                                    fontStyle = FontStyle.Italic
+                                )
+                            },
+                        )
+                    }
                 }
                 //BUTTONS ROW:
                 Row(
@@ -566,6 +681,80 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                         fontWeight = FontWeight.Bold
                     )
                 }
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun VocLanguagesSpinner() {
+    //TODO: Spinner components:
+    val parentOptions = listOf("English", "Italian", "French", "German", "Spanish")
+    var isExpanded by remember { mutableStateOf(false) }
+    var selectedOptionText by remember { mutableStateOf(parentOptions[0]) }
+
+    //Full spinner:
+    ExposedDropdownMenuBox(
+        modifier = Modifier
+            .padding(top = 8.dp, bottom = 20.dp)
+            .fillMaxWidth(),
+        expanded = isExpanded,
+        onExpandedChange = {
+            isExpanded = it
+        }
+    ) {
+        //Visualized textbox:
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable),
+            readOnly = true,
+            value = selectedOptionText,
+            onValueChange = { },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(
+                    expanded = isExpanded
+                )
+            },
+            textStyle = TextStyle(
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Normal
+            ),
+            colors = ExposedDropdownMenuDefaults.textFieldColors(
+                focusedContainerColor = colorResource(id = R.color.dark_grey_background),
+                unfocusedContainerColor = colorResource(id = R.color.transparent_full),
+                focusedTextColor = colorResource(id = R.color.light_grey),
+                unfocusedTextColor = colorResource(id = R.color.light_grey),
+                focusedIndicatorColor = colorResource(id = R.color.colorAccentLight),
+                unfocusedIndicatorColor = colorResource(id = R.color.mid_grey),
+            )
+        )
+        //Dropdown:
+        ExposedDropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = {
+                isExpanded = false
+            },
+            scrollState = rememberScrollState(),
+            containerColor = colorResource(id = R.color.dark_grey_background)
+        ) {
+            parentOptions.forEach { selectionOption ->
+                DropdownMenuItem(
+                    onClick = {
+                        selectedOptionText = selectionOption
+                        isExpanded = false
+                    },
+                    text = {
+                        Text(
+                            text = selectionOption,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = colorResource(id = R.color.light_grey)
+                        )
+                    }
+                )
             }
         }
     }

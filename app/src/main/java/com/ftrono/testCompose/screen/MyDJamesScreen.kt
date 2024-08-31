@@ -233,7 +233,7 @@ fun DJamesCardsRow(navController: NavController, items: List<MyDJamesItem>) {
                             fontSize = 12.sp,
                             fontStyle = FontStyle.Italic,
                             lineHeight = 18.sp,
-                            color = colorResource(id = R.color.colorAccentLight),
+                            color = colorResource(id = R.color.light_grey),
                             modifier = Modifier
                                 .wrapContentWidth()
                         )
