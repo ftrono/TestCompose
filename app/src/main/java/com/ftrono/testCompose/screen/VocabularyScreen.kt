@@ -113,10 +113,10 @@ fun VocabularyScreen(navController: NavController, filter: String, myDJamesItem:
     }
 
     //TODO: FOR PREVIEW ONLY!
-    val editVocOn = rememberSaveable { mutableStateOf(true) }
-    if (editVocOn.value) {
-        DialogEditVocabulary(mContext, editVocOn, filter, key="")
-    }
+//    val editVocOn = rememberSaveable { mutableStateOf(true) }
+//    if (editVocOn.value) {
+//        DialogEditVocabulary(mContext, editVocOn, filter, key="")
+//    }
 
     Column (
         modifier = Modifier
@@ -441,8 +441,6 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
     var textPrefix by rememberSaveable { mutableStateOf("+39") }
     var textPhone by rememberSaveable { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
-    val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     //TextField colors:
     val textFieldColors = OutlinedTextFieldDefaults.colors(
@@ -465,6 +463,9 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
             //cancelable -> false
         }
     ) {
+        val focusManager = LocalFocusManager.current
+        val keyboardController = LocalSoftwareKeyboardController.current
+
         //CONTAINER:
         Card(
             modifier = Modifier
@@ -522,7 +523,7 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                     maxLines = 1,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
-                        imeAction = if (filter == "artists") ImeAction.Done else ImeAction.Next
+                        imeAction = ImeAction.Done
                     ),
                     keyboardActions = KeyboardActions(
                         onDone = {
@@ -660,7 +661,7 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                             ),
                             keyboardActions = KeyboardActions(
                                 onDone = {
-                                    //focusManager.clearFocus()
+                                    focusManager.clearFocus()
                                     keyboardController?.hide()
                                 }
                             ),
