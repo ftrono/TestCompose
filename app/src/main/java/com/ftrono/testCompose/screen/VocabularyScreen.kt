@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
@@ -44,7 +45,6 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -60,10 +60,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -73,7 +74,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
@@ -440,6 +440,9 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
     var textPlayURL by rememberSaveable { mutableStateOf("") }
     var textPrefix by rememberSaveable { mutableStateOf("+39") }
     var textPhone by rememberSaveable { mutableStateOf("") }
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     //TextField colors:
     val textFieldColors = OutlinedTextFieldDefaults.colors(
@@ -466,7 +469,10 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight(),
+                .wrapContentHeight()
+                .clickable {
+                    focusManager.clearFocus()
+                },
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors (
                 containerColor = colorResource(id = R.color.dark_grey)
@@ -503,7 +509,8 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                     modifier = Modifier
                         .padding(top = 8.dp, bottom = 20.dp)
                         .fillMaxWidth()
-                        .wrapContentHeight(),
+                        .wrapContentHeight()
+                        .focusRequester(focusRequester),
                     colors = textFieldColors,
                     value = textName,
                     onValueChange = { newText ->
@@ -515,8 +522,13 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                     maxLines = 1,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Unspecified,
-                        imeAction = ImeAction.Next
+                        imeAction = if (filter == "artists") ImeAction.Done else ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                        }
                     ),
                     placeholder = {
                         Text(
@@ -541,7 +553,8 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                         modifier = Modifier
                             .padding(top = 8.dp, bottom = 20.dp)
                             .fillMaxWidth()
-                            .wrapContentHeight(),
+                            .wrapContentHeight()
+                            .focusRequester(focusRequester),
                         colors = textFieldColors,
                         value = textPlayURL,
                         onValueChange = { newText ->
@@ -553,8 +566,13 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                         singleLine = true,
                         maxLines = 1,
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Uri,
-                            imeAction = ImeAction.Next
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                focusManager.clearFocus()
+                                keyboardController?.hide()
+                            }
                         ),
                         placeholder = {
                             Text(
@@ -624,7 +642,8 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                             modifier = Modifier
                                 .padding(top = 8.dp, bottom = 20.dp)
                                 .fillMaxWidth()
-                                .wrapContentHeight(),
+                                .wrapContentHeight()
+                                .focusRequester(focusRequester),
                             colors = textFieldColors,
                             value = textPhone,
                             onValueChange = { newText ->
@@ -637,7 +656,13 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                             maxLines = 1,
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Next
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    //focusManager.clearFocus()
+                                    keyboardController?.hide()
+                                }
                             ),
                             placeholder = {
                                 Text(
