@@ -97,11 +97,11 @@ private var vocabulary = MutableLiveData<JsonObject>(JsonObject())
 @Composable
 fun VocabularyScreenPreview() {
     val navController = rememberNavController()
-    VocabularyScreen(navController, "contacts", MyDJamesItem.Playlists)
+    VocabularyScreen(navController, "contacts", MyDJamesItem.Playlists, editPreview = true)
 }
 
 @Composable
-fun VocabularyScreen(navController: NavController, filter: String, myDJamesItem: MyDJamesItem) {
+fun VocabularyScreen(navController: NavController, filter: String, myDJamesItem: MyDJamesItem, editPreview: Boolean = false) {
     val mContext = LocalContext.current
     val vocabularyState by vocabulary.observeAsState()
     vocabulary.postValue(getVocItems(mContext, filter))
@@ -112,10 +112,11 @@ fun VocabularyScreen(navController: NavController, filter: String, myDJamesItem:
         DialogDeleteVocabulary(mContext, deleteAllOn, filter)
     }
 
-    //TODO: FOR PREVIEW ONLY!
-    val editVocOn = rememberSaveable { mutableStateOf(true) }
-    if (editVocOn.value) {
-        DialogEditVocabulary(mContext, editVocOn, filter, key="")
+    if (editPreview) {
+        val editVocOn = rememberSaveable { mutableStateOf(true) }
+        if (editVocOn.value) {
+            DialogEditVocabulary(mContext, editVocOn, filter, key="")
+        }
     }
 
     Column (
