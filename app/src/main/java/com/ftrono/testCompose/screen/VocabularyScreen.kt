@@ -10,17 +10,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -29,6 +33,7 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
@@ -39,22 +44,27 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
@@ -97,7 +107,7 @@ private var vocabulary = MutableLiveData<JsonObject>(JsonObject())
 @Composable
 fun VocabularyScreenPreview() {
     val navController = rememberNavController()
-    VocabularyScreen(navController, "contacts", MyDJamesItem.Playlists, editPreview = true)
+    VocabularyScreen(navController, "contacts", MyDJamesItem.Playlists, editPreview = false)
 }
 
 @Composable
@@ -112,163 +122,195 @@ fun VocabularyScreen(navController: NavController, filter: String, myDJamesItem:
         DialogDeleteVocabulary(mContext, deleteAllOn, filter)
     }
 
-    if (editPreview) {
-        val editVocOn = rememberSaveable { mutableStateOf(true) }
-        if (editVocOn.value) {
-            DialogEditVocabulary(mContext, editVocOn, filter, key="")
-        }
+    val editVocOn = rememberSaveable { mutableStateOf(editPreview) }
+    if (editVocOn.value || editPreview) {
+        DialogEditVocabulary(mContext, editVocOn, filter, key="")
     }
 
-    Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colorResource(id = R.color.windowBackground))
+    //List states:
+    val listState = rememberLazyListState()
+
+    Scaffold(
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                containerColor = colorResource(id = R.color.colorAccent),
+                icon = {
+                    Icon(
+                        Icons.Default.Add,
+                        "Add vocabulary item",
+                        tint = colorResource(id = R.color.light_grey)
+                    ) },
+                text = {
+                    Text(
+                        text = "Add",
+                        color = colorResource(id = R.color.light_grey),
+                        fontSize = 16.sp
+                    ) },
+                expanded = listState.isScrollingUp(),
+                onClick = {
+                    editVocOn.value = true
+                }
+            )
+        }
     ) {
-        //HEADER:
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp)
-                .background(colorResource(id = R.color.windowBackground)),
-            contentAlignment = Alignment.CenterEnd
+                .padding(it)
         ) {
-            //BG_IMAGE:
-            Image(
+            Column(
                 modifier = Modifier
+                    .padding(it)
                     .fillMaxSize()
-                    .zIndex(0f),
-                contentScale = ContentScale.Crop,
-                painter = painterResource(myDJamesItem.background),
-                contentDescription = "DJames logo"
-            )
-            //HEADER CONTENT:
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        //GRADIENT:
-                        Brush.verticalGradient(
-                            colorStops = arrayOf(
-                                0.0f to colorResource(id = R.color.transparent_full),
-                                0.3f to colorResource(id = R.color.transparent_full),
-                                1f to colorResource(id = R.color.windowBackground)
-                            )
-                        )
-                    ),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
+                    .background(colorResource(id = R.color.windowBackground))
             ) {
-                //BACK:
-                IconButton(
-                    onClick = {
-                        navController.popBackStack()
-                    }
-                ) {
-                    Icon(
-                        modifier = Modifier
-                            .offset(x = (6.dp))
-                            .size(32.dp),
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = colorResource(id = R.color.colorAccentLight)
-                    )
-                }
-                //TEXT HEADERS:
-                Column(
+                //HEADER:
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.Start
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .background(colorResource(id = R.color.windowBackground)),
+                    contentAlignment = Alignment.CenterEnd
                 ) {
-                    Text(
-                        text = if (filter == "artists") {
-                            "Your hard-to-spell artists"
-                        } else if (filter == "playlists") {
-                            "Your favourite playlists"
-                        } else if (filter == "contacts") {
-                            "Your favourite contacts"
-                        } else {
-                            ""
-                        },
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = colorResource(id = R.color.light_grey),
+                    //BG_IMAGE:
+                    Image(
                         modifier = Modifier
-                            .padding(
-                                start = 6.dp,
-                                top = 14.dp
-                            )
-                            .wrapContentWidth()
+                            .fillMaxSize()
+                            .zIndex(0f),
+                        contentScale = ContentScale.Crop,
+                        painter = painterResource(myDJamesItem.background),
+                        contentDescription = "DJames logo"
                     )
-                    Text(
-                        text = "${vocabularyState!!.size()} items",
-                        fontSize = 14.sp,
-                        fontStyle = FontStyle.Italic,
-                        color = colorResource(id = R.color.colorAccentLight),
+                    //HEADER CONTENT:
+                    Row(
                         modifier = Modifier
-                            .padding(
-                                start = 6.dp,
-                                bottom = 20.dp
+                            .fillMaxSize()
+                            .background(
+                                //GRADIENT:
+                                Brush.verticalGradient(
+                                    colorStops = arrayOf(
+                                        0.0f to colorResource(id = R.color.transparent_full),
+                                        0.3f to colorResource(id = R.color.transparent_full),
+                                        1f to colorResource(id = R.color.windowBackground)
+                                    )
+                                )
+                            ),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        //BACK:
+                        IconButton(
+                            onClick = {
+                                navController.popBackStack()
+                            }
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .offset(x = (6.dp))
+                                    .size(32.dp),
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = colorResource(id = R.color.colorAccentLight)
                             )
-                            .wrapContentWidth()
-                    )
-                }
-            }
-            //OPTIONS BUTTONS:
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                //REFRESH BUTTON:
-                IconButton(
-                    onClick = {
-                        vocabulary.postValue(getVocItems(mContext, filter))
-                        Toast.makeText(mContext, "Vocabulary updated!", Toast.LENGTH_SHORT).show()
+                        }
+                        //TEXT HEADERS:
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalArrangement = Arrangement.Top,
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Text(
+                                text = if (filter == "artists") {
+                                    "Your hard-to-spell artists"
+                                } else if (filter == "playlists") {
+                                    "Your favourite playlists"
+                                } else if (filter == "contacts") {
+                                    "Your favourite contacts"
+                                } else {
+                                    ""
+                                },
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = colorResource(id = R.color.light_grey),
+                                modifier = Modifier
+                                    .padding(
+                                        start = 6.dp,
+                                        top = 14.dp
+                                    )
+                                    .wrapContentWidth()
+                            )
+                            Text(
+                                text = "${vocabularyState!!.size()} items",
+                                fontSize = 14.sp,
+                                fontStyle = FontStyle.Italic,
+                                color = colorResource(id = R.color.colorAccentLight),
+                                modifier = Modifier
+                                    .padding(
+                                        start = 6.dp,
+                                        bottom = 20.dp
+                                    )
+                                    .wrapContentWidth()
+                            )
+                        }
                     }
-                ) {
-                    Icon(
+                    //OPTIONS BUTTONS:
+                    Row(
                         modifier = Modifier
-                            .offset(x = (6.dp))
-                            .size(32.dp),
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Refresh",
-                        tint = colorResource(id = R.color.colorAccentLight)
-                    )
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        //REFRESH BUTTON:
+                        IconButton(
+                            onClick = {
+                                vocabulary.postValue(getVocItems(mContext, filter))
+                                Toast.makeText(mContext, "Vocabulary updated!", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .offset(x = (6.dp))
+                                    .size(32.dp),
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Refresh",
+                                tint = colorResource(id = R.color.colorAccentLight)
+                            )
+                        }
+                        //DELETE BUTTON:
+                        IconButton(
+                            modifier = Modifier
+                                .padding(end = 12.dp),
+                            onClick = {
+                                deleteAllOn.value = true
+                            }
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(32.dp),
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete All",
+                                tint = colorResource(id = R.color.colorAccentLight)
+                            )
+                        }
+                    }
                 }
-                //DELETE BUTTON:
-                IconButton(
+                //HISTORY LIST:
+                LazyColumn(
                     modifier = Modifier
-                        .padding(end=12.dp),
-                    onClick = {
-                        deleteAllOn.value = true
-                    }
+                        .fillMaxSize()
                 ) {
-                    Icon(
-                        modifier = Modifier.size(32.dp),
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete All",
-                        tint = colorResource(id = R.color.colorAccentLight)
-                    )
+                    var vocItems = vocabularyState!!.keySet().toList()
+                    itemsIndexed(
+                        vocItems
+                    ) { index, item ->
+                        //HISTORY CARD:
+                        VocabularyCard(item, filter, myDJamesItem)
+                        if (index == vocItems.lastIndex) Spacer(modifier = Modifier.padding(40.dp))
+                    }
                 }
             }
         }
-        //HISTORY LIST:
-        LazyColumn (
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            itemsIndexed(
-                vocabularyState!!.keySet().toList()
-            ) { index, item ->
-                //HISTORY CARD:
-                VocabularyCard(item, filter, myDJamesItem)
-            }
-        }
-
     }
-
 }
 
 @Composable
@@ -431,6 +473,27 @@ fun DialogDeleteVocabulary(mContext: Context, dialogOnState: MutableState<Boolea
         )
     }
 }
+
+
+// Returns whether the lazy list is currently scrolling up
+@Composable
+private fun LazyListState.isScrollingUp(): Boolean {
+    var previousIndex by remember(this) { mutableIntStateOf(firstVisibleItemIndex) }
+    var previousScrollOffset by remember(this) { mutableIntStateOf(firstVisibleItemScrollOffset) }
+    return remember(this) {
+        derivedStateOf {
+            if (previousIndex != firstVisibleItemIndex) {
+                previousIndex > firstVisibleItemIndex
+            } else {
+                previousScrollOffset >= firstVisibleItemScrollOffset
+            }.also {
+                previousIndex = firstVisibleItemIndex
+                previousScrollOffset = firstVisibleItemScrollOffset
+            }
+        }
+    }.value
+}
+
 
 
 //TODO: TEMP:

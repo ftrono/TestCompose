@@ -46,10 +46,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.compose.rememberNavController
 import com.ftrono.testCompose.R
+import com.ftrono.testCompose.ui.theme.MyDJamesItem
+
+
+@Preview
+@Preview(heightDp = 360, widthDp = 800)
+@Composable
+fun DialogEditPreview() {
+    val navController = rememberNavController()
+    VocabularyScreen(navController, "contacts", MyDJamesItem.Playlists, editPreview = true)
+}
 
 
 @Composable
@@ -80,8 +93,13 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
     //EDIT DIALOG:
     Dialog(
         onDismissRequest = {
-            //cancelable -> false
-        }
+            //cancelable -> true
+            dialogOnState.value = false
+        },
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = false
+        )
     ) {
         val focusManager = LocalFocusManager.current
         val keyboardController = LocalSoftwareKeyboardController.current
