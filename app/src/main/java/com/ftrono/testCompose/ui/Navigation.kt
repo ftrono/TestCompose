@@ -150,7 +150,7 @@ fun Navigation(navController: NavHostController) {
             curNavId = 0
             innerNavOpen.postValue(false)
             settingsOpen.postValue(true)
-            SettingsScreen()
+            SettingsScreen(navController)
         }
 
         //MYDJAMES VOC:

@@ -3,10 +3,13 @@ package com.ftrono.testCompose.application
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
 
+val appVersion = "2.1"
+val copyrightYear = 2024
 
 //GLOBALS:
 val playThreshold = 80
 val midThreshold = 55
+val messLanguages = listOf("English", "Italian", "French", "German", "Spanish")
 
 //STATUS VARS:
 var spotifyLoggedIn = MutableLiveData<Boolean>(false)

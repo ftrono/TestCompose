@@ -1,6 +1,7 @@
 package com.ftrono.testCompose.screen
 
 import android.content.Context
+import android.icu.text.ListFormatter.Width
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,6 +54,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.compose.rememberNavController
 import com.ftrono.testCompose.R
+import com.ftrono.testCompose.application.messLanguages
 import com.ftrono.testCompose.ui.theme.MyDJamesItem
 
 
@@ -231,7 +233,7 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                     )
-                    VocLanguagesSpinner()
+                    VocLanguagesSpinner(messLanguages)
 
                     //CONTACTS: TEXT FIELD 3:
                     Text(
@@ -353,17 +355,16 @@ fun DialogEditVocabulary(mContext: Context, dialogOnState: MutableState<Boolean>
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VocLanguagesSpinner() {
+fun VocLanguagesSpinner(parentOptions: List<String>) {
     //TODO: Spinner components:
-    val parentOptions = listOf("English", "Italian", "French", "German", "Spanish")
     var isExpanded by remember { mutableStateOf(false) }
     var selectedOptionText by remember { mutableStateOf(parentOptions[0]) }
 
     //Full spinner:
     ExposedDropdownMenuBox(
         modifier = Modifier
-            .padding(top = 8.dp, bottom = 20.dp)
-            .fillMaxWidth(),
+                .padding(top = 8.dp, bottom = 20.dp)
+                .fillMaxWidth(),
         expanded = isExpanded,
         onExpandedChange = {
             isExpanded = it
@@ -407,6 +408,7 @@ fun VocLanguagesSpinner() {
             parentOptions.forEach { selectionOption ->
                 DropdownMenuItem(
                     onClick = {
+                        //TODO
                         selectedOptionText = selectionOption
                         isExpanded = false
                     },
