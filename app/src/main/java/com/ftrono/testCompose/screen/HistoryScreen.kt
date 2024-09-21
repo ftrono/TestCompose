@@ -437,7 +437,7 @@ fun getHistoryItemInfo(item: JsonObject, context: Context): JsonObject {
                 ""
             }
 
-        var utils = Utilities(context)
+        var utils = Utilities()
         if (playType == "playlist") {
             //Playlist / artist / collection:
             var matchName = item.get("spotify_play").asJsonObject.get("context_name").asString.split(" ").map { it.lowercase().capitalize(

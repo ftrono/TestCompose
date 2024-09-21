@@ -87,7 +87,7 @@ fun Navigation(navController: NavHostController) {
             curNavId = 1
             innerNavOpen.postValue(false)
             settingsOpen.postValue(false)
-            GuideScreen()
+            GuideScreen(navController)
         }
 
         //2 -> MY DJAMES:
