@@ -49,6 +49,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -228,17 +229,15 @@ class MainActivity : ComponentActivity() {
                 ){
                     Text(
                         modifier = Modifier.offset(y = (2.dp)),
-                        text = "🎧 DJames",
+                        text = stringResource(id = R.string.app_title),
                         fontSize = 22.sp,
                         color = colorResource(id = R.color.light_grey),
-                        //fontWeight = FontWeight.Bold
                     )
                     Text(
                         modifier = Modifier.offset(y = -(2.dp)),
                         text = "for francesco_trono",
                         fontSize = 16.sp,
                         color = colorResource(id = R.color.mid_grey)
-                        //fontWeight = FontWeight.Bold
                     )
                 }
             },

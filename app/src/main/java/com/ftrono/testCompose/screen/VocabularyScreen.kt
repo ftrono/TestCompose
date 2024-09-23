@@ -169,7 +169,7 @@ fun VocabularyScreen(navController: NavController, filter: String, myDJamesItem:
                         .fillMaxWidth()
                         .height(80.dp)
                         .background(colorResource(id = R.color.windowBackground)),
-                    contentAlignment = Alignment.CenterEnd
+                    contentAlignment = Alignment.Center
                 ) {
                     //BG_IMAGE:
                     Image(

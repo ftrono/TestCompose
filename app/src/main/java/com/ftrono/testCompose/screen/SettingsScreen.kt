@@ -150,7 +150,7 @@ fun SettingsScreen(navController: NavController) {
                     .fillMaxWidth()
                     .height(60.dp)
                     .background(colorResource(id = R.color.windowBackground)),
-                contentAlignment = Alignment.CenterEnd
+                contentAlignment = Alignment.Center
             ) {
                 //HEADER CONTENT:
                 Row(

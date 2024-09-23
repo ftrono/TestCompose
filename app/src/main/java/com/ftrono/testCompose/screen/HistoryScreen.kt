@@ -89,17 +89,18 @@ fun HistoryScreen() {
             .background(colorResource(id = R.color.windowBackground))
     ) {
         //HEADER:
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .background(colorResource(id = R.color.windowBackground)),
-            contentAlignment = Alignment.CenterEnd
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             //TEXT HEADERS:
             Column(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .weight(1f),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.Start
             ) {
@@ -123,15 +124,13 @@ fun HistoryScreen() {
                     modifier = Modifier
                         .padding(
                             start = 53.dp,
-                            bottom = 20.dp
+                            bottom = 10.dp
                         )
                         .wrapContentWidth()
                 )
             }
             //OPTIONS BUTTONS:
             Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ){
@@ -218,7 +217,7 @@ fun HistoryCard(item: JsonObject) {
     ) {
         Box(
             modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.CenterEnd
+            contentAlignment = Alignment.Center
         ){
             //INTRO & DATETIME:
             Text(
